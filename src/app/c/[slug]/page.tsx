@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Gift, Lock, LogIn, ShieldQuestion, Sparkles, Users } from "lucide-react";
+import NutDangNhapNoi from "@/ui/NutDangNhapNoi";
 import { mot, q } from "@/db";
 import ChenMa from "@/ui/ChenMa";
 import { layIp } from "@/services/http";
@@ -109,6 +110,7 @@ export default async function TrangDangKy(props: {
       <main style={{ minHeight: "100vh" }}>
         {bannerXemTruoc}
         {cd.ma_header_dang_ky && <ChenMa ma={cd.ma_header_dang_ky} />}
+        <NutDangNhapNoi slug={cd.slug} mau={mau} nen="trang" />
         <Render config={config} data={cd.layout_json} metadata={md as unknown as Record<string, unknown>} />
       </main>
     );
@@ -121,12 +123,7 @@ export default async function TrangDangKy(props: {
       {bannerXemTruoc}
       {cd.ma_header_dang_ky && <ChenMa ma={cd.ma_header_dang_ky} />}
       {/* Người đã tham gia rồi quay lại — cho lối vào tài khoản ngay đầu trang */}
-      <div className="flex justify-end px-4 pt-4">
-        <a href={linkDangNhap}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3.5 py-2 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/30">
-          <LogIn className="h-4 w-4" /> Đã tham gia? Đăng nhập
-        </a>
-      </div>
+      <NutDangNhapNoi slug={cd.slug} mau={mau} />
       <div className="mx-auto max-w-xl px-4 pb-12 pt-6">
         <div className="text-center text-white">
           {cd.logo_url ? (
@@ -201,10 +198,14 @@ export default async function TrangDangKy(props: {
               <Gift className="h-5 w-5" /> {cd.nut_cta || "Đăng ký nhận quà ngay"}
             </button>
           </form>
-          <p className="mt-4 border-t border-slate-100 pt-4 text-center text-sm text-slate-500">
-            Đã đăng ký trước đó?{" "}
-            <a href={linkDangNhap} className="font-bold text-blue-600 hover:underline">Đăng nhập để xem quà của bạn →</a>
-          </p>
+          <div className="mt-5 border-t border-slate-100 pt-5 text-center">
+            <p className="text-sm text-slate-500">Đã đăng ký trước đó?</p>
+            <a href={linkDangNhap}
+              className="mt-2.5 inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-bold transition-colors hover:bg-slate-50"
+              style={{ borderColor: mau, color: mau }}>
+              <LogIn className="h-4 w-4" /> Đăng nhập để xem quà của bạn
+            </a>
+          </div>
         </div>
 
         {cacMoc.length > 0 && (

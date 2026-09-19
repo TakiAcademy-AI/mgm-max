@@ -268,13 +268,17 @@ export const config: Config<Blocks, { mauNen: string; mauChinh: string }> = {
               {dangSua ? <p style={{ textAlign: "center", fontSize: 11, color: "#f59e0b", margin: 0 }}>(Xem trước — nút gửi bị khoá trong trình chỉnh)</p> : null}
             </form>
             {/* Người quay lại: lối vào tài khoản đã có */}
-            <p style={{ textAlign: "center", fontSize: 13, color: "#64748b", margin: 0, paddingTop: 14, marginTop: 14, borderTop: "1px solid #f1f5f9" }}>
-              Đã đăng ký trước đó?{" "}
+            <div style={{ textAlign: "center", paddingTop: 18, marginTop: 18, borderTop: "1px solid #f1f5f9" }}>
+              <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 10px" }}>Đã đăng ký trước đó?</p>
               <a href={`/dang-nhap?tiep=${encodeURIComponent(`/c/${md.slug}`)}`}
-                style={{ color: md.mau || "#2563eb", fontWeight: 800, textDecoration: "none" }}>
+                style={{
+                  display: "block", padding: "11px 18px", borderRadius: 12, fontSize: 14, fontWeight: 800,
+                  textDecoration: "none", color: md.mau || "#2563eb",
+                  border: `2px solid ${md.mau || "#2563eb"}`, background: "#fff",
+                }}>
                 Đăng nhập để xem quà của bạn →
               </a>
-            </p>
+            </div>
           </div>
         );
       },
