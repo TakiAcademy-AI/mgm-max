@@ -61,7 +61,7 @@ export default async function TrangDoiMatKhau(props: {
                 <label className="nhan" htmlFor="mat_khau_cu">Mật khẩu hiện tại</label>
                 <div className="relative">
                   <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
-                  <input id="mat_khau_cu" name="mat_khau_cu" type="password" required autoComplete="current-password" className="o-nhap pl-11" />
+                  <input id="mat_khau_cu" name="mat_khau_cu" type="password" required autoComplete="current-password" className="o-nhap !pl-11" />
                 </div>
               </div>
             )}

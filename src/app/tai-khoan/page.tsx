@@ -72,21 +72,19 @@ export default async function TrangTaiKhoan(props: { searchParams: Promise<{ doi
         <section className="the overflow-hidden">
           <div className="h-20 bg-gradient-to-r from-blue-600 to-violet-600" />
           <div className="px-5 pb-5 sm:px-6">
-            <div className="-mt-10 flex flex-wrap items-end justify-between gap-4">
-              <div className="flex items-end gap-4">
-                <span className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-blue-500 to-violet-500 text-3xl font-black text-white shadow-md">
-                  {chuCai}
-                </span>
-                <div className="pb-1">
-                  <h1 className="text-2xl font-black text-slate-900">{tenHienThi}</h1>
-                  <div className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
-                    <Mail className="h-4 w-4" /> {tv.email}
-                  </div>
-                </div>
-              </div>
+            <div className="-mt-10 flex flex-wrap items-end justify-between gap-3">
+              <span className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-blue-500 to-violet-500 text-3xl font-black text-white shadow-md">
+                {chuCai}
+              </span>
               <Link href="/doi-mat-khau" className="nut-phu !py-2 text-sm">
                 <KeyRound className="h-4 w-4" /> Đổi mật khẩu
               </Link>
+            </div>
+            <div className="mt-3">
+              <h1 className="text-2xl font-black text-slate-900">{tenHienThi}</h1>
+              <div className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
+                <Mail className="h-4 w-4" /> {tv.email}
+              </div>
             </div>
 
             <dl className="mt-6 grid gap-3 sm:grid-cols-3">

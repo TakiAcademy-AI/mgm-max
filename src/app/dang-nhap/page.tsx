@@ -43,7 +43,7 @@ export default async function TrangDangNhap(props: {
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
                 <input id="email" name="email" type="email" required autoFocus autoComplete="email"
-                  placeholder="ban@email.com" className="o-nhap pl-11" />
+                  placeholder="ban@email.com" className="o-nhap !pl-11" />
               </div>
             </div>
             <div>
@@ -51,7 +51,7 @@ export default async function TrangDangNhap(props: {
               <div className="relative">
                 <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
                 <input id="mat_khau" name="mat_khau" type="password" required autoComplete="current-password"
-                  placeholder="Nhập mật khẩu" className="o-nhap pl-11" />
+                  placeholder="Nhập mật khẩu" className="o-nhap !pl-11" />
               </div>
             </div>
             <button className="nut-chinh w-full !py-3"><LogIn className="h-4.5 w-4.5" /> Đăng nhập</button>
