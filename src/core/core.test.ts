@@ -5,6 +5,7 @@ import { chamDiemRuiRo, emailHangLoat, emailRac, NGUONG_CACH_LY } from "./gian-l
 import { mocKeTiep, mocMoKhoa, sapChamMoc, type Moc } from "./moc";
 import { anDanh, soSanhHang, type DongHang } from "./xep-hang";
 import { heSoK, phanTram } from "./thong-ke";
+import { cheSdt, chuanHoaSdt, sdtHopLe } from "./sdt";
 
 describe("mã giới thiệu", () => {
   it("sinh mã 8 ký tự trong bảng Crockford, không trùng trong 1000 lần", () => {
@@ -127,5 +128,24 @@ describe("thống kê", () => {
     expect(heSoK(5, 0)).toBe(Infinity);
     expect(phanTram(1, 3)).toBe(33.3);
     expect(phanTram(1, 0)).toBe(0);
+  });
+});
+
+describe("số điện thoại", () => {
+  it("mọi cách viết của cùng 1 số quy về một dạng chuẩn", () => {
+    for (const v of ["0912345678", "0912 345 678", "0912.345.678", "0912-345-678",
+                     "+84912345678", "+84 912 345 678", "84912345678", "0084912345678"])
+      expect(chuanHoaSdt(v)).toBe("0912345678");
+  });
+  it("nhận đúng các đầu số di động 03/05/07/08/09", () => {
+    for (const d of ["03", "05", "07", "08", "09"])
+      expect(sdtHopLe(`${d}12345678`)).toBe(true);
+  });
+  it("loại số bàn/sai độ dài/có chữ", () => {
+    for (const v of ["02812345678", "0112345678", "091234567", "09123456789", "abc", "", "0912345a78"])
+      expect(chuanHoaSdt(v)).toBe("");
+  });
+  it("che số khi hiển thị công khai", () => {
+    expect(cheSdt("+84912345678")).toBe("0912***678");
   });
 });

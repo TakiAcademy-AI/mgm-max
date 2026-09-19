@@ -234,6 +234,11 @@ export const config: Config<Blocks, { mauNen: string; mauChinh: string }> = {
                 <label style={nhanO}>Email</label>
                 <input name="email" type="email" required maxLength={200} style={oNhap} placeholder="ban@email.com" />
               </div>
+              <div>
+                <label style={nhanO}>Số điện thoại</label>
+                <input name="so_dien_thoai" type="tel" required maxLength={20} inputMode="tel"
+                  autoComplete="tel" style={oNhap} placeholder="0912345678" />
+              </div>
               {md.truongThem.map((t, i) => (
                 <div key={i}>
                   <label style={nhanO}>{t.ten}{t.bat_buoc ? " *" : ""}</label>
@@ -262,6 +267,14 @@ export const config: Config<Blocks, { mauNen: string; mauChinh: string }> = {
               {ghiChu ? <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", margin: 0 }}>{ghiChu}</p> : null}
               {dangSua ? <p style={{ textAlign: "center", fontSize: 11, color: "#f59e0b", margin: 0 }}>(Xem trước — nút gửi bị khoá trong trình chỉnh)</p> : null}
             </form>
+            {/* Người quay lại: lối vào tài khoản đã có */}
+            <p style={{ textAlign: "center", fontSize: 13, color: "#64748b", margin: 0, paddingTop: 14, marginTop: 14, borderTop: "1px solid #f1f5f9" }}>
+              Đã đăng ký trước đó?{" "}
+              <a href={`/dang-nhap?tiep=${encodeURIComponent(`/c/${md.slug}`)}`}
+                style={{ color: md.mau || "#2563eb", fontWeight: 800, textDecoration: "none" }}>
+                Đăng nhập để xem quà của bạn →
+              </a>
+            </p>
           </div>
         );
       },

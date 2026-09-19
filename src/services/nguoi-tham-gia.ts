@@ -1,6 +1,11 @@
 import { mot, q, pool } from "@/db";
 import { sinhMa, sinhToken, chuanHoaMa, maHopLe } from "@/core/ma";
-import { chamDiemRuiRo, emailHangLoat, emailRac, NGUONG_CACH_LY } from "@/core/gian-lan";
+import { chamDiemRuiRo, emailHangLoat, emailRac, NGUONG_CACH_LY, NGUONG_NGUOI_CUNG_IP } from "@/core/gian-lan";
+import { chuanHoaSdt } from "@/core/sdt";
+import {
+  gioiHanIpNgayCd, gioiHanIpNgayTong, ipBiChan, ipMienTru,
+  soDangKyIpToanHeThong, soNguoiCungIp,
+} from "./chong-gian-lan";
 import { mocMoKhoa, mocKeTiep, sapChamMoc, type Moc } from "@/core/moc";
 import { ghiDiem } from "./diem";
 import { xepEmail } from "./email";
@@ -8,8 +13,6 @@ import { layCaiDat } from "./cai-dat";
 import { NGUONG_CAPTCHA } from "./captcha";
 import { banWebhook } from "./webhook";
 import { taoTaiKhoanTuDangKy } from "./tai-khoan";
-
-const GIOI_HAN_IP_NGAY = 3;
 
 export type KetQuaDangKy =
   | { ok: true; ma: string; token: string; demo: boolean; daXacMinh: boolean; cdId: number }
@@ -26,7 +29,7 @@ export async function soDangKyIpHomNay(chienDichId: number, ip: string): Promise
 }
 
 export async function dangKy(tham: {
-  slug: string; ten: string; email: string; maNguoiMoi: string; kenh: string; ip: string; ua: string; baseUrl: string;
+  slug: string; ten: string; email: string; sdt?: string; maNguoiMoi: string; kenh: string; ip: string; ua: string; baseUrl: string;
   duLieuThem?: Record<string, string>; captchaHopLe?: boolean; quocGia?: string;
 }): Promise<KetQuaDangKy> {
   const cd = await mot(`select * from chien_dich where slug=$1`, [tham.slug]);
@@ -44,6 +47,12 @@ export async function dangKy(tham: {
   if (!ten || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, loi: "Tên hoặc email chưa hợp lệ." };
   if (emailRac(email)) return { ok: false, loi: "Vui lòng dùng email thật (không nhận email dùng-một-lần)." };
 
+  // Số điện thoại: bắt buộc, chuẩn hoá để 1 người không lách bằng nhiều cách viết
+  const sdtTho = (tham.sdt || "").trim();
+  if (!sdtTho) return { ok: false, loi: "Vui lòng nhập số điện thoại của bạn." };
+  const sdt = chuanHoaSdt(sdtTho);
+  if (!sdt) return { ok: false, loi: "Số điện thoại chưa đúng (cần số di động Việt Nam, VD: 0912345678)." };
+
   // Trường bắt buộc tuỳ chỉnh (F7)
   const truongThem: { ten: string; bat_buoc: boolean }[] = cd.truong_them || [];
   for (const t of truongThem) {
@@ -55,17 +64,22 @@ export async function dangKy(tham: {
   const cu = await mot(`select * from nguoi_tham_gia where chien_dich_id=$1 and email=$2`, [cd.id, email]);
   if (cu) return { ok: true, ma: cu.ma, token: cu.token_xac_minh || "", demo: cd.che_do_demo, daXacMinh: cu.xac_minh, cdId: cd.id };
 
+  // Số này đã tham gia chiến dịch bằng email khác → chặn (1 người 1 suất)
+  const trungSdt = await mot(`select email from nguoi_tham_gia where chien_dich_id=$1 and so_dien_thoai=$2`, [cd.id, sdt]);
+  if (trungSdt) return { ok: false, loi: "Số điện thoại này đã tham gia chương trình bằng email khác." };
+
   // Blacklist IP + email (F34)
-  const blacklistIp = (await layCaiDat("blacklist_ip")).split(/\s+/).filter(Boolean);
-  if (tham.ip && blacklistIp.includes(tham.ip)) return { ok: false, loi: "Không thể đăng ký từ mạng này." };
+  if (await ipBiChan(tham.ip)) return { ok: false, loi: "Không thể đăng ký từ mạng này." };
   const blacklist = (await layCaiDat("blacklist_email")).split(/\s+/).filter(Boolean);
   if (blacklist.includes(email)) return { ok: false, loi: "Email này không thể tham gia chương trình." };
 
   // Rate-limit theo IP + captcha tự bật (trừ IP whitelist)
-  const whitelist = (await layCaiDat("whitelist_ip")).split(/\s+/).filter(Boolean);
-  if (tham.ip && !whitelist.includes(tham.ip)) {
+  if (tham.ip && !(await ipMienTru(tham.ip))) {
     const dem = await soDangKyIpHomNay(cd.id, tham.ip);
-    if (dem >= GIOI_HAN_IP_NGAY)
+    if (dem >= (await gioiHanIpNgayCd()))
+      return { ok: false, loi: "Quá nhiều lượt đăng ký từ mạng của bạn hôm nay. Thử lại sau nhé." };
+    // Trần chung mọi chiến dịch — chặn kiểu rải nhiều chiến dịch để lách trần từng cái
+    if ((await soDangKyIpToanHeThong(tham.ip)) >= (await gioiHanIpNgayTong()))
       return { ok: false, loi: "Quá nhiều lượt đăng ký từ mạng của bạn hôm nay. Thử lại sau nhé." };
     if (dem >= NGUONG_CAPTCHA && !tham.captchaHopLe)
       return { ok: false, loi: "Vui lòng trả lời đúng câu hỏi xác nhận bên dưới.", canCaptcha: true };
@@ -85,9 +99,9 @@ export async function dangKy(tham: {
   for (let lan = 0; lan < 3; lan++) {
     try {
       const moi = await mot(
-        `insert into nguoi_tham_gia (chien_dich_id, ten, email, ma, token_xac_minh, ip, ua, nguoi_moi_id, kenh_vao, du_lieu_them)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning id`,
-        [cd.id, ten, email, ma, token, tham.ip, tham.ua.slice(0, 300), nguoiMoi?.id || null, tham.kenh,
+        `insert into nguoi_tham_gia (chien_dich_id, ten, email, so_dien_thoai, ma, token_xac_minh, ip, ua, nguoi_moi_id, kenh_vao, du_lieu_them)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning id`,
+        [cd.id, ten, email, sdt, ma, token, tham.ip, tham.ua.slice(0, 300), nguoiMoi?.id || null, tham.kenh,
          JSON.stringify(tham.duLieuThem || {})]
       );
       if (nguoiMoi) {
@@ -100,12 +114,15 @@ export async function dangKy(tham: {
       break;
     } catch (e: unknown) {
       if (String(e).includes("nguoi_tham_gia_ma_key")) { ma = sinhMa(); continue; }
+      // Hai người bấm gửi cùng lúc với cùng số → UNIQUE tầng DB chặn (không tin mỗi check ở trên)
+      if (String(e).includes("idx_ntg_sdt"))
+        return { ok: false, loi: "Số điện thoại này đã tham gia chương trình bằng email khác." };
       throw e;
     }
   }
 
   // Thông tin đăng ký dùng luôn làm tài khoản đăng nhập cho lần sau (mật khẩu mặc định)
-  await taoTaiKhoanTuDangKy(email, ten);
+  await taoTaiKhoanTuDangKy(email, ten, sdt);
 
   await xepEmail(cd.id, "xac_minh", email, ten, {
     ten, ten_chien_dich: cd.ten, link_xac_minh: `${tham.baseUrl}/xac-minh/${token}`,
@@ -196,13 +213,13 @@ async function traoChaoMung(cd: any, nguoiId: number, coNguoiMoi: boolean): Prom
 }
 
 /** Xác minh email → kích hoạt điểm + xử referral + quà hai chiều. */
-export async function xacMinh(token: string, baseUrl: string): Promise<{ ma: string; cdId: number } | null> {
+export async function xacMinh(token: string, baseUrl: string, ipXacMinh = ""): Promise<{ ma: string; cdId: number } | null> {
   const ng = await mot(`select * from nguoi_tham_gia where token_xac_minh=$1`, [token]);
   if (!ng) return null;
   if (ng.xac_minh) return { ma: ng.ma, cdId: ng.chien_dich_id }; // link bấm lại — vô hại
 
   const cd = await mot(`select * from chien_dich where id=$1`, [ng.chien_dich_id]);
-  await q(`update nguoi_tham_gia set xac_minh=true, xac_minh_luc=now() where id=$1`, [ng.id]);
+  await q(`update nguoi_tham_gia set xac_minh=true, xac_minh_luc=now(), ip_xac_minh=$2 where id=$1`, [ng.id, ipXacMinh]);
   await ghiDiem(cd.id, ng.id, "dang_ky", "", cd.diem_dang_ky);
   banWebhook(cd.webhook_url, "lead.xac_minh", { email: ng.email, ten: ng.ten, ma: ng.ma, chien_dich: cd.slug });
 
@@ -224,12 +241,20 @@ export async function xacMinh(token: string, baseUrl: string): Promise<{ ma: str
     const trong10Phut = cacRefereeKhac.filter(
       (r) => Math.abs(new Date(r.tao_luc).getTime() - new Date(ng.tao_luc).getTime()) < 10 * 60 * 1000
     ).length;
+    // Tín hiệu IP: IP này đã gắn nhiều người, hoặc đăng ký IP khác nhưng bấm xác minh
+    // từ đúng máy của người mời (kiểu tự tạo email rồi tự bấm hộ).
+    const nguoiCungIp = await soNguoiCungIp(ng.ip);
+    const miemTru = await ipMienTru(ng.ip);
     const diemRuiRo = chamDiemRuiRo({
       cungIpVoiNguoiMoi: !!ng.ip && ng.ip === nguoiMoi?.ip,
       emailHangLoat: emailHangLoat(ng.email, cacRefereeKhac.map((r) => r.email)),
       nhieuRefereeCungIp: !!ng.ip && cacRefereeKhac.some((r) => r.ip === ng.ip),
       dangKyDonDap: trong10Phut >= 5,
       chuaXacMinh48h: false,
+      nhieuNguoiCungIp: !miemTru && nguoiCungIp >= NGUONG_NGUOI_CUNG_IP,
+      ipXacMinhTrungNguoiMoi: !miemTru && !!ipXacMinh && !!nguoiMoi?.ip
+        && ipXacMinh === nguoiMoi.ip && ng.ip !== nguoiMoi.ip,
+      thieuSdt: !ng.so_dien_thoai,
     });
     await q(`update gioi_thieu set diem_rui_ro=$2 where id=$1`, [gt.id, diemRuiRo]);
     await q(`update nguoi_tham_gia set diem_rui_ro=$2 where id=$1`, [ng.id, diemRuiRo]);

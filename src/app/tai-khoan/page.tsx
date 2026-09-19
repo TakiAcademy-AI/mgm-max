@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ArrowRight, CalendarDays, CheckCircle2, Clock, Gift, KeyRound, LogOut, Mail,
-  Rocket, Trophy, UserRound, Users,
+  Phone, Rocket, Trophy, UserRound, Users,
 } from "lucide-react";
 import { q } from "@/db";
 import { phaiDoiMatKhau, thanhVienHienTai } from "@/services/tai-khoan";
@@ -82,8 +82,11 @@ export default async function TrangTaiKhoan(props: { searchParams: Promise<{ doi
             </div>
             <div className="mt-3">
               <h1 className="text-2xl font-black text-slate-900">{tenHienThi}</h1>
-              <div className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
-                <Mail className="h-4 w-4" /> {tv.email}
+              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                <span className="inline-flex items-center gap-1.5"><Mail className="h-4 w-4" /> {tv.email}</span>
+                {tv.so_dien_thoai && (
+                  <span className="inline-flex items-center gap-1.5"><Phone className="h-4 w-4" /> {tv.so_dien_thoai}</span>
+                )}
               </div>
             </div>
 

@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     slug,
     ten: String(form.get("ten") || ""),
     email: String(form.get("email") || ""),
+    sdt: String(form.get("so_dien_thoai") || ""),
     maNguoiMoi: maForm || maCookie || maQuery,
     kenh: String(form.get("kenh") || ""),
     ip: (req.headers.get("x-forwarded-for") || "").split(",")[0].trim(),

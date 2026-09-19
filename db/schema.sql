@@ -223,3 +223,16 @@ create table if not exists tai_khoan (
 insert into tai_khoan (email, ten)
 select distinct on (email) email, ten from nguoi_tham_gia order by email, id
 on conflict (email) do nothing;
+
+-- ————— Số điện thoại + dấu vết IP khi xác minh (chống gian lận) —————
+alter table nguoi_tham_gia add column if not exists so_dien_thoai text not null default '';
+alter table nguoi_tham_gia add column if not exists ip_xac_minh   text not null default '';
+alter table tai_khoan      add column if not exists so_dien_thoai text not null default '';
+
+-- 1 số điện thoại chỉ tham gia 1 lần trong mỗi chiến dịch (chặn 1 người nhiều email),
+-- và mỗi số chỉ gắn 1 tài khoản để đăng nhập được bằng số.
+create unique index if not exists idx_ntg_sdt on nguoi_tham_gia (chien_dich_id, so_dien_thoai)
+  where so_dien_thoai <> '';
+create unique index if not exists idx_tk_sdt  on tai_khoan (so_dien_thoai)
+  where so_dien_thoai <> '';
+create index if not exists idx_ntg_ip on nguoi_tham_gia (ip) where ip <> '';

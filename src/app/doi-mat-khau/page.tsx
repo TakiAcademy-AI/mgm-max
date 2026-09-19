@@ -7,9 +7,9 @@ import { actDoiMatKhau } from "../tai-khoan/actions";
 export const dynamic = "force-dynamic";
 
 export default async function TrangDoiMatKhau(props: {
-  searchParams: Promise<{ loi?: string; dau?: string }>;
+  searchParams: Promise<{ loi?: string; dau?: string; tiep?: string }>;
 }) {
-  const { loi = "", dau = "" } = await props.searchParams;
+  const { loi = "", dau = "", tiep = "" } = await props.searchParams;
   const tv = await thanhVienHienTai();
   if (!tv) redirect("/dang-nhap");
 
@@ -49,6 +49,7 @@ export default async function TrangDoiMatKhau(props: {
 
           <form action={actDoiMatKhau} className="mt-6 space-y-4">
             {dau && <input type="hidden" name="dau" value="1" />}
+            {tiep && <input type="hidden" name="tiep" value={tiep} />}
             {batBuoc ? (
               <>
                 <input type="hidden" name="mat_khau_cu" value={MAT_KHAU_MAC_DINH} />

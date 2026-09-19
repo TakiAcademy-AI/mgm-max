@@ -9,12 +9,18 @@ export const DOMAIN_RAC = new Set([
   "maildrop.cc", "fakeinbox.com", "mytemp.email", "throwawaymail.com", "tmpmail.net",
 ]);
 
+/** Số người khác nhau cùng 1 IP (toàn hệ thống) bắt đầu bị coi là bất thường. */
+export const NGUONG_NGUOI_CUNG_IP = 5;
+
 export type TinHieu = {
   cungIpVoiNguoiMoi: boolean;      // referee đăng ký cùng IP với referrer
   emailHangLoat: boolean;          // cấu trúc tên+số tăng dần cùng domain lạ
   nhieuRefereeCungIp: boolean;     // >=2 referee của cùng referrer chung IP
   dangKyDonDap: boolean;           // >5 referee của 1 referrer trong 10 phút
   chuaXacMinh48h: boolean;
+  nhieuNguoiCungIp?: boolean;      // IP này đã có >= NGUONG_NGUOI_CUNG_IP người (mọi chiến dịch)
+  ipXacMinhTrungNguoiMoi?: boolean; // đăng ký IP khác nhưng bấm xác minh từ đúng IP người mời
+  thieuSdt?: boolean;              // không để lại số điện thoại (khó đối chiếu người thật)
 };
 
 export function chamDiemRuiRo(t: TinHieu): number {
@@ -24,6 +30,9 @@ export function chamDiemRuiRo(t: TinHieu): number {
   if (t.nhieuRefereeCungIp) diem += 25;
   if (t.dangKyDonDap) diem += 20;
   if (t.chuaXacMinh48h) diem += 10;
+  if (t.nhieuNguoiCungIp) diem += 30;
+  if (t.ipXacMinhTrungNguoiMoi) diem += 35;
+  if (t.thieuSdt) diem += 10;
   return diem;
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Gift, Lock, ShieldQuestion, Sparkles, Users } from "lucide-react";
+import { Gift, Lock, LogIn, ShieldQuestion, Sparkles, Users } from "lucide-react";
 import { mot, q } from "@/db";
 import ChenMa from "@/ui/ChenMa";
 import { layIp } from "@/services/http";
@@ -114,11 +114,20 @@ export default async function TrangDangKy(props: {
     );
   }
 
+  const linkDangNhap = `/dang-nhap?tiep=${encodeURIComponent(`/c/${cd.slug}`)}`;
+
   return (
     <main className="min-h-screen bg-slate-50" style={{ background: `linear-gradient(180deg, ${mau} 0%, ${mau}cc 38%, ${nenDuoi} 62%)` }}>
       {bannerXemTruoc}
       {cd.ma_header_dang_ky && <ChenMa ma={cd.ma_header_dang_ky} />}
-      <div className="mx-auto max-w-xl px-4 py-12">
+      {/* Người đã tham gia rồi quay lại — cho lối vào tài khoản ngay đầu trang */}
+      <div className="flex justify-end px-4 pt-4">
+        <a href={linkDangNhap}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3.5 py-2 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/30">
+          <LogIn className="h-4 w-4" /> Đã tham gia? Đăng nhập
+        </a>
+      </div>
+      <div className="mx-auto max-w-xl px-4 pb-12 pt-6">
         <div className="text-center text-white">
           {cd.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -160,6 +169,11 @@ export default async function TrangDangKy(props: {
               <label className="nhan">Email</label>
               <input name="email" type="email" required maxLength={200} className="o-nhap" placeholder="ban@email.com" />
             </div>
+            <div>
+              <label className="nhan">Số điện thoại</label>
+              <input name="so_dien_thoai" type="tel" required maxLength={20} inputMode="tel"
+                autoComplete="tel" className="o-nhap" placeholder="0912345678" />
+            </div>
             {truongThem.map((t, i) => (
               <div key={i}>
                 <label className="nhan">{t.ten}{t.bat_buoc ? " *" : ""}</label>
@@ -187,6 +201,10 @@ export default async function TrangDangKy(props: {
               <Gift className="h-5 w-5" /> {cd.nut_cta || "Đăng ký nhận quà ngay"}
             </button>
           </form>
+          <p className="mt-4 border-t border-slate-100 pt-4 text-center text-sm text-slate-500">
+            Đã đăng ký trước đó?{" "}
+            <a href={linkDangNhap} className="font-bold text-blue-600 hover:underline">Đăng nhập để xem quà của bạn →</a>
+          </p>
         </div>
 
         {cacMoc.length > 0 && (

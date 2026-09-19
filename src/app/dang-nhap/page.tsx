@@ -27,7 +27,7 @@ export default async function TrangDangNhap(props: {
         <div className="the mt-7 p-6 sm:p-8">
           <h1 className="text-2xl font-black text-slate-900">Đăng nhập thành viên</h1>
           <p className="mt-1.5 text-sm text-slate-500">
-            Dùng đúng email bạn đã đăng ký chương trình để xem điểm, quà và link mời của mình.
+            Dùng email <b>hoặc số điện thoại</b> bạn đã đăng ký chương trình để xem điểm, quà và link mời của mình.
           </p>
 
           {loi && (
@@ -39,11 +39,11 @@ export default async function TrangDangNhap(props: {
           <form action={actDangNhap} className="mt-6 space-y-4">
             <input type="hidden" name="tiep" value={tiep} />
             <div>
-              <label className="nhan" htmlFor="email">Email đã đăng ký</label>
+              <label className="nhan" htmlFor="email">Email hoặc số điện thoại</label>
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
-                <input id="email" name="email" type="email" required autoFocus autoComplete="email"
-                  placeholder="ban@email.com" className="o-nhap !pl-11" />
+                <input id="email" name="email" required autoFocus autoComplete="username"
+                  placeholder="ban@email.com hoặc 0912345678" className="o-nhap !pl-11" />
               </div>
             </div>
             <div>

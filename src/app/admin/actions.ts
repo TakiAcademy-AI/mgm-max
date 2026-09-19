@@ -231,6 +231,8 @@ export async function actXuLyEmail() {
 
 export async function actLuuCaiDat(form: FormData) {
   await canAdmin();
+  await ghiCaiDat("gioi_han_ip_ngay", String(form.get("gioi_han_ip_ngay") || ""));
+  await ghiCaiDat("gioi_han_ip_ngay_tong", String(form.get("gioi_han_ip_ngay_tong") || ""));
   await ghiCaiDat("whitelist_ip", String(form.get("whitelist_ip") || ""));
   await ghiCaiDat("blacklist_email", String(form.get("blacklist_email") || ""));
   await ghiCaiDat("blacklist_ip", String(form.get("blacklist_ip") || ""));
