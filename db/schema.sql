@@ -236,5 +236,6 @@ create unique index if not exists idx_ntg_sdt on nguoi_tham_gia (chien_dich_id, 
 create unique index if not exists idx_tk_sdt  on tai_khoan (so_dien_thoai)
   where so_dien_thoai <> '';
 create index if not exists idx_ntg_ip on nguoi_tham_gia (ip) where ip <> '';
--- Trang Admin → Thành viên ghép tai_khoan với nguoi_tham_gia theo email.
+-- Trang Admin → Thành viên ghép tai_khoan với nguoi_tham_gia / hang_doi_email theo email.
 create index if not exists idx_ntg_email on nguoi_tham_gia (email);
+create index if not exists idx_hdemail_den on hang_doi_email (den_email);

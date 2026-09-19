@@ -9,6 +9,9 @@ export type DongThanhVien = {
   tao_luc: string; dang_nhap_luc: string | null; doi_mk_luc: string | null;
   mk_mac_dinh: boolean; dang_khoa: boolean;
   so_cd: string; so_cd_xac_minh: string; diem: string; so_ban: string; so_qua: string;
+  // Thống kê email đã gửi cho chính địa chỉ này
+  em_tong: string; em_da_gui: string; em_loi: string; em_cho: string; em_gia_lap: string;
+  em_gui_cuoi: string | null;
 };
 
 /** Ghép điều kiện WHERE dùng chung cho cả bảng hiển thị và file CSV. */
@@ -37,13 +40,50 @@ const CHON = `
      join nguoi_tham_gia n on n.id = g.nguoi_moi_id
     where n.email = t.email and g.trang_thai = 'xac_minh') as so_ban,
   (select count(*) from qua_da_trao r
-     join nguoi_tham_gia n on n.id = r.nguoi_id where n.email = t.email) as so_qua`;
+     join nguoi_tham_gia n on n.id = r.nguoi_id where n.email = t.email) as so_qua,
+  em.tong as em_tong, em.da_gui as em_da_gui, em.loi as em_loi,
+  em.cho as em_cho, em.gia_lap as em_gia_lap, em.gui_cuoi as em_gui_cuoi`;
+
+/** Gom thống kê email trong 1 lượt quét thay vì nhiều subquery rời. */
+const GHEP_EMAIL = `
+  left join lateral (
+    select count(*) as tong,
+           count(*) filter (where e.trang_thai = 'da_gui')  as da_gui,
+           count(*) filter (where e.trang_thai = 'loi')     as loi,
+           count(*) filter (where e.trang_thai = 'cho')     as cho,
+           count(*) filter (where e.trang_thai = 'gia_lap') as gia_lap,
+           max(e.gui_luc) filter (where e.trang_thai = 'da_gui') as gui_cuoi
+    from hang_doi_email e where e.den_email = t.email
+  ) em on true`;
 
 export async function danhSachThanhVien(
   loc: LocThanhVien, tim: string, gioiHan = 200
 ): Promise<DongThanhVien[]> {
   const { sql, ts } = dieuKien(loc, tim);
-  return q<DongThanhVien>(`select ${CHON} from tai_khoan t ${sql} order by t.id desc limit ${gioiHan}`, ts);
+  return q<DongThanhVien>(
+    `select ${CHON} from tai_khoan t ${GHEP_EMAIL} ${sql} order by t.id desc limit ${gioiHan}`, ts);
+}
+
+/** Một thành viên theo id (cho trang chi tiết). */
+export async function layThanhVien(id: number): Promise<DongThanhVien | null> {
+  const r = await q<DongThanhVien>(
+    `select ${CHON} from tai_khoan t ${GHEP_EMAIL} where t.id = $1`, [id]);
+  return r[0] || null;
+}
+
+export type DongEmail = {
+  id: number; loai: string; tieu_de: string; noi_dung: string; trang_thai: string;
+  loi: string; so_lan: number; tao_luc: string; gui_luc: string | null; ten_cd: string | null;
+};
+
+/** Toàn bộ email hệ thống đã xếp/gửi cho địa chỉ này, mới nhất trước. */
+export async function emailCuaThanhVien(email: string): Promise<DongEmail[]> {
+  return q<DongEmail>(
+    `select e.id, e.loai, e.tieu_de, e.noi_dung, e.trang_thai, e.loi, e.so_lan,
+            e.tao_luc, e.gui_luc, c.ten as ten_cd
+     from hang_doi_email e
+     left join chien_dich c on c.id = e.chien_dich_id
+     where e.den_email = $1 order by e.id desc`, [email]);
 }
 
 /** Đếm theo từng bộ lọc để hiện số trên tab. */
@@ -83,11 +123,14 @@ export async function chienDichCuaThanhVien(cacEmail: string[]) {
 export async function xuatCsvThanhVien(loc: LocThanhVien, tim: string): Promise<string> {
   const rows = await danhSachThanhVien(loc, tim, 100000);
   const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const dau = "ten,email,so_dien_thoai,so_chien_dich,so_cd_da_xac_minh,diem,so_ban_moi,so_qua,mat_khau,tham_gia_tu,dang_nhap_gan_nhat";
+  const dau = "ten,email,so_dien_thoai,so_chien_dich,so_cd_da_xac_minh,diem,so_ban_moi,so_qua,"
+    + "mat_khau,tham_gia_tu,dang_nhap_gan_nhat,email_tong,email_da_gui,email_loi,email_chua_gui,email_gui_gan_nhat";
   return [dau, ...rows.map((r) => [
     r.ten, r.email, r.so_dien_thoai, r.so_cd, r.so_cd_xac_minh, r.diem, r.so_ban, r.so_qua,
     r.mk_mac_dinh ? "mặc định (chưa đổi)" : "đã đổi",
     new Date(r.tao_luc).toISOString(),
     r.dang_nhap_luc ? new Date(r.dang_nhap_luc).toISOString() : "",
+    r.em_tong, r.em_da_gui, r.em_loi, Number(r.em_cho) + Number(r.em_gia_lap),
+    r.em_gui_cuoi ? new Date(r.em_gui_cuoi).toISOString() : "",
   ].map(esc).join(","))].join("\n");
 }

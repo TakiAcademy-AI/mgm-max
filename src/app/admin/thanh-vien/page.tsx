@@ -78,6 +78,7 @@ export default async function TrangThanhVien(props: {
               <th className="px-4 py-3 text-right">Điểm</th>
               <th className="px-4 py-3 text-right">Bạn mời</th>
               <th className="px-4 py-3 text-right">Quà</th>
+              <th className="px-4 py-3">Email đã gửi</th>
               <th className="px-4 py-3">Đăng nhập</th>
               <th className="px-4 py-3 text-right">Thao tác</th>
             </tr>
@@ -88,7 +89,9 @@ export default async function TrangThanhVien(props: {
               return (
                 <tr key={t.id} className="border-b border-slate-100 align-top hover:bg-blue-50/40">
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-slate-800">{t.ten || <span className="text-slate-400">(chưa có tên)</span>}</div>
+                    <Link href={`/admin/thanh-vien/${t.id}`} className="font-semibold text-slate-800 hover:text-blue-700 hover:underline">
+                      {t.ten || <span className="text-slate-400">(chưa có tên)</span>}
+                    </Link>
                     <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-slate-400">
                       <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" /> {t.email}</span>
                       {t.so_dien_thoai
@@ -112,6 +115,23 @@ export default async function TrangThanhVien(props: {
                   <td className="px-4 py-3 text-right font-bold text-blue-700">{Number(t.diem)}</td>
                   <td className="px-4 py-3 text-right">{Number(t.so_ban)}</td>
                   <td className="px-4 py-3 text-right">{Number(t.so_qua)}</td>
+                  <td className="px-4 py-3">
+                    {Number(t.em_tong) === 0 ? (
+                      <span className="text-xs text-slate-300">chưa gửi</span>
+                    ) : (
+                      <Link href={`/admin/thanh-vien/${t.id}`} className="flex flex-col items-start gap-1">
+                        <div className="flex flex-wrap gap-1">
+                          {Number(t.em_da_gui) > 0 && <span className="hieu bg-emerald-100 text-emerald-700">{t.em_da_gui} đã gửi</span>}
+                          {Number(t.em_loi) > 0 && <span className="hieu bg-red-100 text-red-700">{t.em_loi} lỗi</span>}
+                          {Number(t.em_cho) + Number(t.em_gia_lap) > 0 &&
+                            <span className="hieu bg-amber-100 text-amber-700">{Number(t.em_cho) + Number(t.em_gia_lap)} chưa tới</span>}
+                        </div>
+                        <span className="text-xs text-slate-400 hover:text-blue-600 hover:underline">
+                          {Number(t.em_tong)} email · xem lịch sử →
+                        </span>
+                      </Link>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col items-start gap-1">
                       {t.dang_khoa && <span className="hieu bg-red-100 text-red-700"><Lock className="h-3 w-3" /> Đang bị khoá</span>}
@@ -143,7 +163,7 @@ export default async function TrangThanhVien(props: {
               );
             })}
             {ds.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-400">
+              <tr><td colSpan={8} className="px-4 py-12 text-center text-slate-400">
                 <Gift className="mx-auto mb-2 h-8 w-8 text-slate-200" />
                 {tim ? `Không tìm thấy thành viên khớp «${tim}».` : "Chưa có thành viên nào."}
               </td></tr>
@@ -154,10 +174,10 @@ export default async function TrangThanhVien(props: {
 
       <p className="mt-3 text-xs text-slate-400">
         <Trophy className="mr-1 inline h-3.5 w-3.5" />
-        Điểm / bạn mời / quà là tổng cộng trên mọi chiến dịch. Bảng hiện tối đa 200 dòng —
-        file CSV xuất đầy đủ theo đúng bộ lọc đang chọn.
-        Đặt lại mật khẩu sẽ đưa về mặc định <code className="font-mono">{MAT_KHAU_MAC_DINH}</code> và
-        đăng xuất thành viên đó khỏi mọi thiết bị.
+        Điểm / bạn mời / quà là tổng cộng trên mọi chiến dịch. Bấm tên thành viên để xem hồ sơ và
+        toàn bộ lịch sử email đã gửi cho họ. Bảng hiện tối đa 200 dòng — file CSV xuất đầy đủ theo
+        đúng bộ lọc đang chọn. Đặt lại mật khẩu sẽ đưa về mặc định{" "}
+        <code className="font-mono">{MAT_KHAU_MAC_DINH}</code> và đăng xuất thành viên đó khỏi mọi thiết bị.
       </p>
     </div>
   );

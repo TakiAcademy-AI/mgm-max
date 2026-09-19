@@ -246,6 +246,15 @@ export async function actMoKhoaThanhVien(form: FormData) {
   revalidatePath("/admin/thanh-vien");
 }
 
+/** Gửi lại MỘT email cụ thể (lỗi / còn giả lập) — dùng ở trang chi tiết thành viên. */
+export async function actGuiLaiMotEmail(form: FormData) {
+  await canAdmin();
+  const id = Number(form.get("id"));
+  await q(`update hang_doi_email set trang_thai='cho', so_lan=0, loi='', gui_luc=null where id=$1`, [id]);
+  await xuLyHangDoi(50);
+  revalidatePath(`/admin/thanh-vien/${Number(form.get("tv"))}`);
+}
+
 /** Đưa các email đã đánh dấu "giả lập" (xếp lúc chưa cấu hình Resend) về hàng đợi để gửi thật. */
 export async function actGuiLaiGiaLap() {
   await canAdmin();
