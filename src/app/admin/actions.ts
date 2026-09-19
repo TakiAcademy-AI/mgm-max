@@ -103,6 +103,34 @@ export async function actThemMoc(form: FormData) {
   revalidatePath(`/admin/cd/${cdId}`, "layout");
 }
 
+/** Sửa mốc quà đã có — sửa theo id nên đổi được cả ngưỡng «số bạn» mà vẫn giữ
+ *  nguyên kho coupon đã nạp (xoá rồi tạo lại sẽ mất sạch kho mã). */
+export async function actSuaMoc(form: FormData) {
+  await canAdmin();
+  const id = Number(form.get("id"));
+  const cdId = Number(form.get("chien_dich_id"));
+  const ve = `/admin/cd/${cdId}/thiet-lap/moc-qua`;
+  const nguong = Number(form.get("nguong"));
+  const tenQua = String(form.get("ten_qua") || "").trim();
+  if (!nguong || nguong < 1 || !tenQua)
+    redirect(`${ve}?sua=${id}&loi=${encodeURIComponent("Cần nhập số bạn (từ 1) và tên quà.")}`);
+  try {
+    await q(
+      `update moc_qua set nguong=$2, ten_qua=$3, loai_qua=$4, gia_tri=$5, coupon_dung_chung=$6
+       where id=$1 and chien_dich_id=$7`,
+      [id, nguong, tenQua, String(form.get("loai_qua") || "coupon"),
+       String(form.get("gia_tri") || ""), String(form.get("coupon_dung_chung") || ""), cdId]
+    );
+  } catch (e) {
+    // UNIQUE (chien_dich_id, nguong): đã có mốc khác cùng số bạn
+    if (String(e).includes("moc_qua_chien_dich_id_nguong_key"))
+      redirect(`${ve}?sua=${id}&loi=${encodeURIComponent(`Đã có mốc khác ở ${nguong} bạn — mỗi mốc phải có số bạn riêng.`)}`);
+    throw e;
+  }
+  revalidatePath(`/admin/cd/${cdId}`, "layout");
+  redirect(`${ve}?ok=${encodeURIComponent(`Đã lưu mốc ${nguong} bạn.`)}`);
+}
+
 export async function actXoaMoc(form: FormData) {
   await canAdmin();
   const id = Number(form.get("id"));
