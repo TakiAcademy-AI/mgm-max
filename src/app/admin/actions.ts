@@ -8,7 +8,7 @@ import { ghiCaiDat } from "@/services/cai-dat";
 import { ghiDiem } from "@/services/diem";
 import { render, xuLyHangDoi, guiEmailTest } from "@/services/email";
 import { guiWebhookTest } from "@/services/webhook";
-import { dangKyNhanh, xacNhanGioiThieu } from "@/services/nguoi-tham-gia";
+import { dangKyNhanh, traoChaoMungBuSauDuyet, xacNhanGioiThieu } from "@/services/nguoi-tham-gia";
 import { chayBocTham, chiDinhWinner, duyetBocTham } from "@/services/boc-tham-svc";
 import { taoChienDichBangAI } from "@/services/ai";
 import { timMauToanDien } from "@/ui/mau-toan-dien";
@@ -58,15 +58,15 @@ export async function actSuaChienDich(form: FormData) {
      String(form.get("giai_boc_tham") || ""), Number(form.get("so_giai") || 3), form.get("che_do_demo") === "on",
      String(form.get("ket_thuc_luc") || "") || null, String(form.get("redirect_khi_dong") || "")]
   );
-  revalidatePath(`/admin/chien-dich/${id}`);
+  revalidatePath(`/admin/cd/${id}`, "layout");
 }
 
 export async function actDoiTrangThai(form: FormData) {
   await canAdmin();
   const id = Number(form.get("id"));
   await q(`update chien_dich set trang_thai=$2 where id=$1`, [id, String(form.get("trang_thai"))]);
-  revalidatePath("/admin/chien-dich");
-  revalidatePath(`/admin/chien-dich/${id}`);
+  revalidatePath("/admin");
+  revalidatePath(`/admin/cd/${id}`, "layout");
 }
 
 export async function actCloneChienDich(form: FormData) {
@@ -100,7 +100,7 @@ export async function actThemMoc(form: FormData) {
     [cdId, Number(form.get("nguong")), String(form.get("ten_qua")), String(form.get("loai_qua")),
      String(form.get("gia_tri") || ""), String(form.get("coupon_dung_chung") || "")]
   );
-  revalidatePath(`/admin/chien-dich/${cdId}`);
+  revalidatePath(`/admin/cd/${cdId}`, "layout");
 }
 
 export async function actXoaMoc(form: FormData) {
@@ -110,7 +110,7 @@ export async function actXoaMoc(form: FormData) {
   // nếu không FK qua_da_trao.moc_id chặn xoá mốc đã có người đạt.
   await q(`update qua_da_trao set moc_id=null where moc_id=$1`, [id]);
   await q(`delete from moc_qua where id=$1`, [id]);
-  revalidatePath(`/admin/chien-dich/${Number(form.get("chien_dich_id"))}`);
+  revalidatePath(`/admin/cd/${Number(form.get("chien_dich_id"))}`, "layout");
 }
 
 export async function actNapCoupon(form: FormData) {
@@ -118,8 +118,9 @@ export async function actNapCoupon(form: FormData) {
   const mocId = Number(form.get("moc_id"));
   const cdId = Number(form.get("chien_dich_id"));
   const cacMa = String(form.get("danh_sach") || "").split(/\s+/).map((m) => m.trim()).filter(Boolean);
-  for (const ma of cacMa) await q(`insert into kho_coupon (moc_id, ma) values ($1,$2)`, [mocId, ma]);
-  revalidatePath(`/admin/chien-dich/${cdId}`);
+  for (const ma of cacMa)
+    await q(`insert into kho_coupon (moc_id, ma) values ($1,$2) on conflict do nothing`, [mocId, ma]);
+  revalidatePath(`/admin/cd/${cdId}`, "layout");
 }
 
 // ————— Nhiệm vụ tuỳ chỉnh —————
@@ -142,13 +143,13 @@ export async function actThemHanhDong(form: FormData) {
 export async function actBatTatHanhDong(form: FormData) {
   await canAdmin();
   await q(`update hanh_dong_tuy_chinh set bat = not bat where id=$1`, [Number(form.get("id"))]);
-  revalidatePath(`/admin/chien-dich/${Number(form.get("chien_dich_id"))}`);
+  revalidatePath(`/admin/cd/${Number(form.get("chien_dich_id"))}`, "layout");
 }
 
 export async function actXoaHanhDong(form: FormData) {
   await canAdmin();
   await q(`delete from hanh_dong_tuy_chinh where id=$1`, [Number(form.get("id"))]);
-  revalidatePath(`/admin/chien-dich/${Number(form.get("chien_dich_id"))}`);
+  revalidatePath(`/admin/cd/${Number(form.get("chien_dich_id"))}`, "layout");
 }
 
 // ————— Mẫu email —————
@@ -160,7 +161,7 @@ export async function actLuuMauEmail(form: FormData) {
      on conflict (chien_dich_id, loai) do update set tieu_de=excluded.tieu_de, noi_dung=excluded.noi_dung`,
     [cdId, String(form.get("loai")), String(form.get("tieu_de")), String(form.get("noi_dung"))]
   );
-  revalidatePath(`/admin/chien-dich/${cdId}`);
+  revalidatePath(`/admin/cd/${cdId}`, "layout");
 }
 
 // ————— Lead + fraud —————
@@ -169,6 +170,8 @@ export async function actDuyetCachLy(form: FormData) {
   const gtId = Number(form.get("gioi_thieu_id"));
   const dongY = String(form.get("quyet_dinh")) === "duyet";
   if (dongY) {
+    // Trao bù quà chào mừng đã bị giữ lại lúc cách ly, rồi mới công nhận referral
+    await traoChaoMungBuSauDuyet(gtId);
     await xacNhanGioiThieu(gtId, await layBaseUrl());
   } else {
     await q(`update gioi_thieu set trang_thai='huy' where id=$1`, [gtId]);
@@ -326,7 +329,7 @@ export async function actSuaGiaoDien(form: FormData) {
      String(form.get("og_tieu_de") || ""), String(form.get("og_mo_ta") || ""), String(form.get("og_anh") || ""),
      JSON.stringify(loiMoi), JSON.stringify(truongThem), String(form.get("webhook_url") || "")]
   );
-  revalidatePath(`/admin/chien-dich/${id}`);
+  revalidatePath(`/admin/cd/${id}`, "layout");
 }
 
 // ————— F15/F16 — import lead từ CSV (UpViral không làm được) —————
@@ -346,7 +349,7 @@ export async function actImportCsv(form: FormData) {
     });
     if (kq.ok && kq.moiTao) taoMoi++; else boQua++;
   }
-  redirect(`/admin/chien-dich/${cdId}?import=${taoMoi}-${boQua}`);
+  redirect(`/admin/cd/${cdId}/quang-ba/san-co?import=${taoMoi}-${boQua}`);
 }
 
 // ————— F18 — broadcast email (UpViral không có) —————

@@ -42,7 +42,7 @@ export default async function NguoiThamGia(props: {
     tongDong = rows.length;
   } else {
     const dk = tab === "truc-tiep" ? "and n.nguoi_moi_id is null" : tab === "gioi-thieu" ? "and n.nguoi_moi_id is not null" : "";
-    const timDk = tim ? `and (lower(n.email) like $2 or lower(n.ten) like $2 or lower(n.ma) like $2)` : "";
+    const timDk = tim ? `and (lower(n.email) like $2 or lower(n.ten) like $2 or lower(n.ma) like $2 or n.so_dien_thoai like $2)` : "";
     const thamSo: unknown[] = tim ? [cd.id, `%${tim.toLowerCase()}%`] : [cd.id];
     tongDong = Number((await mot(`select count(*) as so from nguoi_tham_gia n where n.chien_dich_id=$1 ${dk} ${timDk}`, thamSo))?.so || 0);
     rows = await q(
@@ -87,7 +87,7 @@ export default async function NguoiThamGia(props: {
             <>
               <form method="get" className="ml-auto flex items-center gap-2">
                 <input type="hidden" name="tab" value={tab} />
-                <input name="tim" defaultValue={tim} className="o-nhap !w-56 !py-1.5 text-sm" placeholder="Tìm tên / email / mã…" />
+                <input name="tim" defaultValue={tim} className="o-nhap !w-56 !py-1.5 text-sm" placeholder="Tìm tên / email / SĐT / mã…" />
                 <button className="nut-phu !p-2" title="Tìm"><Search className="h-4 w-4" /></button>
               </form>
               <a href={`/api/admin/csv?cd=${cd.id}`} className="nut-phu !p-2" title="Xuất CSV"><Download className="h-4 w-4" /></a>

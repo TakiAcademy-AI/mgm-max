@@ -239,3 +239,5 @@ create index if not exists idx_ntg_ip on nguoi_tham_gia (ip) where ip <> '';
 -- Trang Admin → Thành viên ghép tai_khoan với nguoi_tham_gia / hang_doi_email theo email.
 create index if not exists idx_ntg_email on nguoi_tham_gia (email);
 create index if not exists idx_hdemail_den on hang_doi_email (den_email);
+-- Nạp coupon hai lần không được nhân đôi kho (sẽ phát cùng mã cho 2 người).
+create unique index if not exists idx_coupon_ma on kho_coupon (moc_id, ma);

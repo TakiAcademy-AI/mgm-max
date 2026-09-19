@@ -29,6 +29,14 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   };
 }
 
+/** URL chuyển hướng do admin đặt — chỉ nhận đường dẫn nội bộ hoặc http(s). */
+function urlAnToan(u: string): boolean {
+  const s = u.trim();
+  if (s.startsWith("//")) return false;          // protocol-relative → ra ngoài mà trông như nội bộ
+  if (s.startsWith("/")) return true;
+  return /^https?:\/\//i.test(s);
+}
+
 function youtubeEmbed(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{6,})/);
   return m ? `https://www.youtube.com/embed/${m[1]}` : null;
@@ -56,7 +64,8 @@ export default async function TrangDangKy(props: {
   const daAdmin = await laAdmin();
   const xemTruoc = cd.trang_thai !== "chay" && daAdmin;
   if (cd.trang_thai !== "chay" && !daAdmin) {
-    if (cd.redirect_khi_dong) redirect(cd.redirect_khi_dong);
+    // Chỉ theo URL an toàn: đường dẫn nội bộ hoặc http(s). Chặn javascript:, data:…
+    if (cd.redirect_khi_dong && urlAnToan(cd.redirect_khi_dong)) redirect(cd.redirect_khi_dong);
     const chuaMo = cd.trang_thai === "nhap";
     return (
       <main className="mx-auto max-w-lg px-4 py-20 text-center">

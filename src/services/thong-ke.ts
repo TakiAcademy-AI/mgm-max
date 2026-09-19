@@ -69,7 +69,7 @@ export async function bangXepHang(chienDichId: number, gioiHan = 10, cuaNguoiId?
             coalesce((select max(extract(epoch from tao_luc)) from so_diem s where s.nguoi_id=n.id),0) as luc
      from nguoi_tham_gia n
      where n.chien_dich_id=$1 and n.xac_minh and not n.chan
-       and not exists (select 1 from gioi_thieu g2 where g2.nguoi_duoc_moi_id=n.id and g2.trang_thai='cach_ly')`,
+       and not exists (select 1 from gioi_thieu g2 where g2.nguoi_duoc_moi_id=n.id and g2.trang_thai in ('cach_ly','huy'))`,
     [chienDichId]
   );
   const dong: DongHang[] = rows.map((r) => ({ id: r.id, ten: r.ten, diem: Number(r.diem), soBan: Number(r.soban), datDiemLuc: Number(r.luc) * 1000 }));
@@ -101,7 +101,7 @@ export async function theoNgay(chienDichId: number, soNgay = 14): Promise<DiemNg
 
 export async function xuatCsv(chienDichId: number): Promise<string> {
   const rows = await q(
-    `select n.ten, n.email, n.ma, n.xac_minh, n.kenh_vao, n.tao_luc, n.diem_rui_ro,
+    `select n.ten, n.email, n.so_dien_thoai, n.ma, n.xac_minh, n.kenh_vao, n.tao_luc, n.diem_rui_ro,
             coalesce((select sum(diem) from so_diem s where s.nguoi_id=n.id),0) as diem,
             (select count(*) from gioi_thieu g where g.nguoi_moi_id=n.id and g.trang_thai='xac_minh') as soban,
             (select email from nguoi_tham_gia m where m.id=n.nguoi_moi_id) as nguoi_moi
@@ -109,8 +109,8 @@ export async function xuatCsv(chienDichId: number): Promise<string> {
     [chienDichId]
   );
   const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const dau = "ten,email,ma,xac_minh,kenh_vao,tao_luc,diem_rui_ro,diem,so_ban_moi,nguoi_moi";
+  const dau = "ten,email,so_dien_thoai,ma,xac_minh,kenh_vao,tao_luc,diem_rui_ro,diem,so_ban_moi,nguoi_moi";
   return [dau, ...rows.map((r) =>
-    [r.ten, r.email, r.ma, r.xac_minh, r.kenh_vao, new Date(r.tao_luc).toISOString(), r.diem_rui_ro, r.diem, r.soban, r.nguoi_moi || ""].map(esc).join(",")
+    [r.ten, r.email, r.so_dien_thoai, r.ma, r.xac_minh, r.kenh_vao, new Date(r.tao_luc).toISOString(), r.diem_rui_ro, r.diem, r.soban, r.nguoi_moi || ""].map(esc).join(",")
   )].join("\n");
 }

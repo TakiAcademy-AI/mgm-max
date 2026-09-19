@@ -35,6 +35,8 @@ export default async function FormNhung(props: {
           <input type="hidden" name="ref" value={ref} />
           <input name="ten" required maxLength={100} className="o-nhap !py-2 text-sm" placeholder="Tên của bạn" />
           <input name="email" type="email" required maxLength={200} className="o-nhap !py-2 text-sm" placeholder="Email" />
+          <input name="so_dien_thoai" type="tel" required maxLength={20} inputMode="tel" autoComplete="tel"
+            className="o-nhap !py-2 text-sm" placeholder="Số điện thoại" />
           {truongThem.map((t, i) => (
             <input key={i} name={`them_${i}`} required={t.bat_buoc} maxLength={300} className="o-nhap !py-2 text-sm" placeholder={t.ten + (t.bat_buoc ? " *" : "")} />
           ))}

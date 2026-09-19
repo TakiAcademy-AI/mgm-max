@@ -7,12 +7,39 @@ export const dynamic = "force-dynamic";
 
 export default async function TrangCamOn(props: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ma?: string; t?: string; nhung?: string }>;
+  searchParams: Promise<{ ma?: string; t?: string; nhung?: string; lai?: string }>;
 }) {
   const { slug } = await props.params;
-  const { t = "", nhung = "" } = await props.searchParams;
+  const { t = "", nhung = "", lai = "" } = await props.searchParams;
   const cd = await mot(`select * from chien_dich where slug=$1`, [slug]);
   if (!cd) redirect("/");
+
+  // Email này đã tham gia từ trước — không mở trang riêng (xem route /api/dang-ky)
+  if (lai) {
+    const daXacMinh = lai === "da";
+    const khung = (
+      <div className={`the ${nhung ? "p-5" : "p-8"} text-center`}>
+        <div className={`mx-auto flex ${nhung ? "h-12 w-12" : "h-16 w-16"} items-center justify-center rounded-full bg-blue-100`}>
+          <MailCheck className={`${nhung ? "h-6 w-6" : "h-8 w-8"} text-blue-600`} />
+        </div>
+        <h1 className={`mt-4 font-black text-slate-900 ${nhung ? "text-lg" : "text-2xl"}`}>
+          {daXacMinh ? "Email này đã tham gia rồi" : "Đã gửi lại link xác nhận"}
+        </h1>
+        <p className={`mt-2 text-slate-500 ${nhung ? "text-sm" : ""}`}>
+          {daXacMinh
+            ? "Đăng nhập bằng chính email (hoặc số điện thoại) đã đăng ký để xem điểm, quà và link mời của bạn."
+            : "Chúng tôi vừa gửi lại link xác nhận vào hộp thư của email này. Mở thư và bấm link để kích hoạt nhé."}
+        </p>
+        {daXacMinh && (
+          <Link href={`/dang-nhap?tiep=/c/${cd.slug}`} target={nhung ? "_top" : undefined} className="nut-chinh mt-5">
+            Đăng nhập <ArrowRight className="h-4 w-4" />
+          </Link>
+        )}
+      </div>
+    );
+    if (nhung) return <main className="bg-white p-4"><div className="mx-auto max-w-sm">{khung}</div></main>;
+    return <main className="mx-auto max-w-lg px-4 py-20">{khung}</main>;
+  }
 
   const noiDung = (
     <div className={`the ${nhung ? "p-5" : "p-8"} text-center`}>

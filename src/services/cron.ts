@@ -13,7 +13,7 @@ export async function chayCron(): Promise<string> {
 
   // 1. Campaign quá hạn: tự bốc thăm (chờ admin duyệt) + tự đóng
   const hetHan = await q(
-    `select * from chien_dich where trang_thai='chay' and ket_thuc_luc is not null and ket_thuc_luc < now()`);
+    `select * from chien_dich where trang_thai in ('chay','tam_dung') and ket_thuc_luc is not null and ket_thuc_luc < now()`);
   for (const cd of hetHan) {
     if (cd.giai_boc_tham) {
       const daCo = await mot(

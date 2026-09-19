@@ -2,3 +2,6 @@
 create index if not exists idx_ntg_email on nguoi_tham_gia (email);
 -- Theo dõi email đã gửi cho từng thành viên (Admin → Thành viên → chi tiết).
 create index if not exists idx_hdemail_den on hang_doi_email (den_email);
+
+-- Chống nạp trùng mã coupon.
+create unique index if not exists idx_coupon_ma on kho_coupon (moc_id, ma);

@@ -12,7 +12,7 @@ async function ungVienHopLe(chienDichId: number) {
             coalesce((select max(extract(epoch from tao_luc)) from so_diem s where s.nguoi_id=n.id),0) as luc
      from nguoi_tham_gia n
      where n.chien_dich_id=$1 and n.xac_minh and not n.chan
-       and not exists (select 1 from gioi_thieu g where g.nguoi_duoc_moi_id=n.id and g.trang_thai='cach_ly')`,
+       and not exists (select 1 from gioi_thieu g where g.nguoi_duoc_moi_id=n.id and g.trang_thai in ('cach_ly','huy'))`,
     [chienDichId]
   );
 }
@@ -64,8 +64,12 @@ export async function chiDinhWinner(chienDichId: number, email: string, giai: nu
 
 /** Admin duyệt kết quả → trao quà + email chúc mừng + webhook từng người thắng. */
 export async function duyetBocTham(bocThamId: number, baseUrl: string) {
-  const bt = await mot(`select * from boc_tham where id=$1`, [bocThamId]);
-  if (!bt || bt.trang_thai !== "cho_duyet") return;
+  // Chiếm khoá NGAY bằng update có điều kiện: bấm Duyệt hai lần thì lần sau không
+  // lấy được row nào, tránh trao giải trùng và gửi email chúc mừng hai lần.
+  const bt = await mot(
+    `update boc_tham set trang_thai='da_duyet' where id=$1 and trang_thai='cho_duyet' returning *`,
+    [bocThamId]);
+  if (!bt) return;
   const cd = await mot(`select * from chien_dich where id=$1`, [bt.chien_dich_id]);
   const tenGiai = (giai: number) => (giai === 1 ? "Giải Nhất" : giai === 2 ? "Giải Nhì" : giai === 3 ? "Giải Ba" : `Giải #${giai}`);
   for (const w of bt.ket_qua as { giai: number; id: number; ten: string; email: string }[]) {
@@ -74,11 +78,10 @@ export async function duyetBocTham(bocThamId: number, baseUrl: string) {
       [w.id, `${tenGiai(w.giai)}: ${cd.giai_boc_tham}`]
     );
     const ng = await mot(`select ma from nguoi_tham_gia where id=$1`, [w.id]);
-    banWebhook(cd.webhook_url, "boc_tham.trung_giai", { email: w.email, giai: tenGiai(w.giai), qua: cd.giai_boc_tham, chien_dich: cd.slug });
+    await banWebhook(cd.webhook_url, "boc_tham.trung_giai", { email: w.email, giai: tenGiai(w.giai), qua: cd.giai_boc_tham, chien_dich: cd.slug });
     await xepEmail(cd.id, "trung_giai", w.email, w.ten, {
       ten: w.ten, ten_chien_dich: cd.ten, giai: `${tenGiai(w.giai)} — ${cd.giai_boc_tham}`,
       link_rieng: `${baseUrl}/toi/${ng?.ma}`,
     });
   }
-  await q(`update boc_tham set trang_thai='da_duyet' where id=$1`, [bocThamId]);
 }

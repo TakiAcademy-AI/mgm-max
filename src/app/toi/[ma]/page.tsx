@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { Crown, Gift, LogIn, PartyPopper, Trophy, UserRound, Users } from "lucide-react";
@@ -27,6 +28,14 @@ export default async function TrangCuaToi(props: {
   if (!ng) redirect("/");
   const cd = await mot(`select * from chien_dich where id=$1`, [ng.chien_dich_id]);
   if (!ng.xac_minh) redirect(`/c/${cd.slug}/cam-on?ma=${ma}${cd.che_do_demo && ng.token_xac_minh ? `&t=${ng.token_xac_minh}` : ""}`);
+
+  // Trang này chứa email + mã quà nên CHỈ chủ nhân được xem. Mã giới thiệu vốn được
+  // chia sẻ công khai (link /r/[ma]) nên không thể coi là bằng chứng sở hữu.
+  // Chấp nhận 2 bằng chứng: đang đăng nhập đúng email, hoặc giữ cookie đặt lúc xác minh.
+  const tvHienTai = await thanhVienHienTai();
+  const khoCookie = await cookies();
+  const laChuNhan = tvHienTai?.email === ng.email || khoCookie.get(`mgm_toi_${cd.id}`)?.value === ng.ma;
+  if (!laChuNhan) redirect(`/dang-nhap?tiep=${encodeURIComponent(`/toi/${ng.ma}`)}`);
 
   const baseUrl = await layBaseUrl();
   const linkRieng = `${baseUrl}/r/${ng.ma}`;

@@ -47,13 +47,18 @@ export async function POST(req: NextRequest) {
   });
 
   const goc = nhung ? `/nhung/${slug}` : `/c/${slug}`;
+  const nhungQ = nhung ? "&nhung=1" : "";
   if (!kq.ok) return chuyenHuong(`${goc}?loi=${encodeURIComponent(kq.loi)}`, 303);
+
+  // Email đã tham gia trước đó → chỉ báo chung chung, KHÔNG mở trang riêng và không
+  // đặt cookie, vì người gõ form chưa chứng minh được họ sở hữu hộp thư này.
+  if (!kq.moi) return chuyenHuong(`/c/${slug}/cam-on?lai=${kq.daXacMinh ? "da" : "1"}${nhungQ}`, 303);
+
   if (kq.daXacMinh) {
     const res = chuyenHuong(`/toi/${kq.ma}`, 303);
     res.cookies.set(`mgm_toi_${kq.cdId}`, kq.ma, { maxAge: 180 * 24 * 3600, path: "/", sameSite: "lax" });
     return res;
   }
   const demoQ = kq.demo ? `&t=${kq.token}` : "";
-  const nhungQ = nhung ? "&nhung=1" : "";
   return chuyenHuong(`/c/${slug}/cam-on?ma=${kq.ma}${demoQ}${nhungQ}`, 303);
 }

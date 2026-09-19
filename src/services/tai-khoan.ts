@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { mot, q } from "@/db";
 import { chuanHoaSdt } from "@/core/sdt";
 import { kyToken } from "./ky";
+import { CHAY_THAT } from "./auth";
 
 /** Mật khẩu mặc định phát cho thành viên mới: 1 đến 9. */
 export const MAT_KHAU_MAC_DINH = "123456789";
@@ -42,7 +43,7 @@ const chuKy = (id: number, matKhau: string) => kyToken(`tv:${id}:${matKhau}`);
 async function datPhien(tv: { id: number; mat_khau: string }) {
   const kho = await cookies();
   kho.set(COOKIE, `${tv.id}.${chuKy(tv.id, tv.mat_khau)}`, {
-    httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 60, path: "/",
+    httpOnly: true, sameSite: "lax", secure: CHAY_THAT, maxAge: 60 * 60 * 24 * 60, path: "/",
   });
 }
 
@@ -62,7 +63,7 @@ export async function dangXuatThanhVien() {
   const kho = await cookies();
   // Ghi đè cookie rỗng + maxAge 0 (thay vì delete) — cùng đường ghi với lúc đăng nhập,
   // nên trình duyệt áp đúng Set-Cookie cả khi action chạy qua fetch của React.
-  kho.set(COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
+  kho.set(COOKIE, "", { httpOnly: true, sameSite: "lax", secure: CHAY_THAT, path: "/", maxAge: 0 });
 }
 
 // ————— Tạo tài khoản khi đăng ký chiến dịch —————
