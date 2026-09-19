@@ -27,15 +27,17 @@ export default async function TrangCuaToi(props: {
   const ng = await mot(`select * from nguoi_tham_gia where ma=$1`, [ma]);
   if (!ng) redirect("/");
   const cd = await mot(`select * from chien_dich where id=$1`, [ng.chien_dich_id]);
-  if (!ng.xac_minh) redirect(`/c/${cd.slug}/cam-on?ma=${ma}${cd.che_do_demo && ng.token_xac_minh ? `&t=${ng.token_xac_minh}` : ""}`);
 
   // Trang này chứa email + mã quà nên CHỈ chủ nhân được xem. Mã giới thiệu vốn được
   // chia sẻ công khai (link /r/[ma]) nên không thể coi là bằng chứng sở hữu.
   // Chấp nhận 2 bằng chứng: đang đăng nhập đúng email, hoặc giữ cookie đặt lúc xác minh.
+  // Phải kiểm TRƯỚC nhánh chưa-xác-minh, nếu không token xác minh bị lộ ở chế độ demo.
   const tvHienTai = await thanhVienHienTai();
   const khoCookie = await cookies();
   const laChuNhan = tvHienTai?.email === ng.email || khoCookie.get(`mgm_toi_${cd.id}`)?.value === ng.ma;
   if (!laChuNhan) redirect(`/dang-nhap?tiep=${encodeURIComponent(`/toi/${ng.ma}`)}`);
+
+  if (!ng.xac_minh) redirect(`/c/${cd.slug}/cam-on?ma=${ma}${cd.che_do_demo && ng.token_xac_minh ? `&t=${ng.token_xac_minh}` : ""}`);
 
   const baseUrl = await layBaseUrl();
   const linkRieng = `${baseUrl}/r/${ng.ma}`;
