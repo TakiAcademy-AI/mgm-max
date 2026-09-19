@@ -229,6 +229,14 @@ export async function actXuLyEmail() {
   revalidatePath("/admin/email");
 }
 
+/** Đưa các email đã đánh dấu "giả lập" (xếp lúc chưa cấu hình Resend) về hàng đợi để gửi thật. */
+export async function actGuiLaiGiaLap() {
+  await canAdmin();
+  await q(`update hang_doi_email set trang_thai='cho', so_lan=0, loi='', gui_luc=null where trang_thai='gia_lap'`);
+  await xuLyHangDoi(200);
+  revalidatePath("/admin/email");
+}
+
 export async function actLuuCaiDat(form: FormData) {
   await canAdmin();
   await ghiCaiDat("gioi_han_ip_cd", String(form.get("gioi_han_ip_cd") || ""));

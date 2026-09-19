@@ -1,7 +1,9 @@
-import { Inbox, Megaphone, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, Inbox, Megaphone, RefreshCw, Send } from "lucide-react";
 import { q, mot } from "@/db";
+import { layCaiDat } from "@/services/cai-dat";
 import { yeuCauAdmin } from "../bao-ve";
-import { actBroadcast, actXuLyEmail } from "../actions";
+import { actBroadcast, actGuiLaiGiaLap, actXuLyEmail } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +16,16 @@ const TEN: Record<string, string> = { cho: "Chờ gửi", da_gui: "Đã gửi", 
 export default async function TrangEmail(props: { searchParams: Promise<{ broadcast?: string }> }) {
   await yeuCauAdmin();
   const { broadcast } = await props.searchParams;
-  const coKey = !!process.env.RESEND_API_KEY;
+  // Khoá Resend có thể đặt bằng biến môi trường HOẶC trong Admin → Cài đặt (giống lúc gửi thật)
+  const coKey = !!process.env.RESEND_API_KEY || !!(await layCaiDat("resend_api_key"));
+  const emailFrom = process.env.EMAIL_FROM || (await layCaiDat("email_from"));
   const emails = await q(`select * from hang_doi_email order by id desc limit 100`);
-  const dem = await mot(`select count(*) filter (where trang_thai='cho') as cho, count(*) as tong from hang_doi_email`);
+  const dem = await mot(
+    `select count(*) filter (where trang_thai='cho') as cho,
+            count(*) filter (where trang_thai='gia_lap') as gia_lap,
+            count(*) filter (where trang_thai='da_gui') as da_gui,
+            count(*) filter (where trang_thai='loi') as loi,
+            count(*) as tong from hang_doi_email`);
   const cacCd = await q(`select id, ten from chien_dich order by id desc`);
 
   return (
@@ -25,12 +34,51 @@ export default async function TrangEmail(props: { searchParams: Promise<{ broadc
         <div>
           <h1 className="text-2xl font-black text-slate-900">Email tự động</h1>
           <p className="text-sm text-slate-500">
-            {coKey ? "Đang gửi THẬT qua Resend." : <>Chế độ <b className="text-blue-700">giả lập</b> — nội dung hiển thị tại đây thay vì gửi thật (điền RESEND_API_KEY vào .env để gửi thật).</>}
+            {coKey
+              ? <>Đang gửi <b className="text-emerald-600">THẬT</b> qua Resend.</>
+              : <>Chế độ <b className="text-blue-700">giả lập</b> — nội dung hiển thị tại đây thay vì gửi thật (điền API key ở <b>Cài đặt</b> hoặc biến <code className="font-mono">RESEND_API_KEY</code>).</>}
             {" "}Hàng đợi: {Number(dem?.cho || 0)} chờ / {Number(dem?.tong || 0)} tổng.
           </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {[
+              { k: "da_gui", n: Number(dem?.da_gui || 0) }, { k: "cho", n: Number(dem?.cho || 0) },
+              { k: "gia_lap", n: Number(dem?.gia_lap || 0) }, { k: "loi", n: Number(dem?.loi || 0) },
+            ].filter((o) => o.n > 0).map((o) => (
+              <span key={o.k} className={`hieu ${MAU[o.k]}`}>{TEN[o.k]}: {o.n}</span>
+            ))}
+          </div>
         </div>
         <form action={actXuLyEmail}><button className="nut-chinh !py-2 text-sm"><RefreshCw className="h-4 w-4" /> Xử lý hàng đợi</button></form>
       </div>
+
+      {/* Có key nhưng chưa đặt người gửi → Resend chỉ cho gửi tới chính email chủ tài khoản */}
+      {coKey && !emailFrom && (
+        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <div className="text-sm">
+            <div className="font-bold text-amber-900">Chưa đặt địa chỉ người gửi (EMAIL_FROM)</div>
+            <p className="mt-1 text-amber-800">
+              Đang dùng tạm <code className="font-mono">onboarding@resend.dev</code> — Resend chỉ cho gửi tới{" "}
+              <b>chính email chủ tài khoản Resend</b>, gửi cho khách sẽ lỗi. Hãy xác minh tên miền trên Resend rồi
+              điền người gửi dạng <code className="font-mono">Tên <span>&lt;mgm@taki.vn&gt;</span></code> ở{" "}
+              <Link href="/admin/cai-dat" className="font-bold underline">Cài đặt</Link>.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Email cũ đã bị đánh dấu giả lập từ lúc chưa có key — cho gửi lại thật */}
+      {coKey && Number(dem?.gia_lap || 0) > 0 && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+          <div className="text-sm text-blue-900">
+            <b>{Number(dem?.gia_lap)} email</b> đã xếp từ lúc còn chế độ giả lập nên chưa ai nhận được.
+            Bấm để đưa lại vào hàng đợi và gửi thật.
+          </div>
+          <form action={actGuiLaiGiaLap}>
+            <button className="nut-chinh !py-2 text-sm"><Send className="h-4 w-4" /> Gửi lại {Number(dem?.gia_lap)} email</button>
+          </form>
+        </div>
+      )}
 
       {/* F18 — broadcast email cho toàn bộ participant (UpViral không có) */}
       <div className="the mt-5 p-6">
