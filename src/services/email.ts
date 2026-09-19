@@ -40,7 +40,7 @@ export const MAU_MAC_DINH: Record<string, { ten: string; tieu_de: string; noi_du
     ten: "Chào mừng + link riêng",
     tieu_de: "🎉 Link mời bạn riêng của bạn đây — {{ten_chien_dich}}",
     noi_dung:
-      "Chào {{ten}},\n\nEmail đã xác nhận thành công! Đây là trang riêng của bạn (link mời + tiến độ quà):\n{{link_rieng}}\n\n{{qua_chao_mung}}Mời ngay 1 người bạn để mở khoá quà đầu tiên!",
+      "Chào {{ten}},\n\nEmail đã xác nhận thành công! Đây là trang riêng của bạn (link mời + tiến độ quà):\n{{link_rieng}}\n\n{{qua_chao_mung}}Mời ngay 1 người bạn để mở khoá quà đầu tiên!\n\n—\nTài khoản của bạn đã được tạo sẵn với chính email này. Lần sau chỉ cần đăng nhập là xem lại được điểm và quà — mật khẩu mặc định là 123456789, hệ thống sẽ yêu cầu bạn đổi ngay lần đầu.",
   },
   moi_thanh_cong: {
     ten: "Bạn vừa mời thành công",

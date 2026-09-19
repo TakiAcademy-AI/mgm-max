@@ -204,3 +204,22 @@ create table if not exists theo_doi_nguon (
   tao_luc       timestamptz not null default now(),
   unique (chien_dich_id, keyword)
 );
+
+-- Tài khoản thành viên: khoá theo EMAIL toàn hệ thống (1 người có thể tham gia nhiều chiến dịch).
+-- mat_khau rỗng = đang dùng mật khẩu mặc định → hệ thống buộc đổi ngay sau khi đăng nhập.
+create table if not exists tai_khoan (
+  id            serial primary key,
+  email         text unique not null,
+  ten           text not null default '',
+  mat_khau      text not null default '',            -- scrypt: "muối:băm"; rỗng = mật khẩu mặc định
+  lan_sai       int  not null default 0,             -- đếm lần nhập sai liên tiếp
+  khoa_den      timestamptz,                         -- tạm khoá đăng nhập tới thời điểm này
+  tao_luc       timestamptz not null default now(),
+  doi_mk_luc    timestamptz,
+  dang_nhap_luc timestamptz
+);
+
+-- Tài khoản cho người đã đăng ký TRƯỚC khi có tính năng này (mật khẩu mặc định).
+insert into tai_khoan (email, ten)
+select distinct on (email) email, ten from nguoi_tham_gia order by email, id
+on conflict (email) do nothing;

@@ -7,6 +7,7 @@ import { xepEmail } from "./email";
 import { layCaiDat } from "./cai-dat";
 import { NGUONG_CAPTCHA } from "./captcha";
 import { banWebhook } from "./webhook";
+import { taoTaiKhoanTuDangKy } from "./tai-khoan";
 
 const GIOI_HAN_IP_NGAY = 3;
 
@@ -103,6 +104,9 @@ export async function dangKy(tham: {
     }
   }
 
+  // Thông tin đăng ký dùng luôn làm tài khoản đăng nhập cho lần sau (mật khẩu mặc định)
+  await taoTaiKhoanTuDangKy(email, ten);
+
   await xepEmail(cd.id, "xac_minh", email, ten, {
     ten, ten_chien_dich: cd.ten, link_xac_minh: `${tham.baseUrl}/xac-minh/${token}`,
   });
@@ -158,6 +162,7 @@ export async function dangKyNhanh(tham: {
       throw e;
     }
   }
+  await taoTaiKhoanTuDangKy(email, ten); // tài khoản đăng nhập cho lần sau
   await ghiDiem(cd.id, nguoiId, "dang_ky", "", cd.diem_dang_ky);
   const dongQua = await traoChaoMung(cd, nguoiId, !!nguoiMoi); // quà chào mừng hai chiều (finding #9)
   if (nguoiMoi) {

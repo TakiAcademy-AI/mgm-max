@@ -24,6 +24,13 @@ export default async function TrangCamOn(props: {
         Chúng tôi vừa gửi email xác nhận. Mở hộp thư và bấm link để kích hoạt
         <b> link mời bạn riêng</b> của bạn — chưa xác nhận thì lượt mời chưa được tính điểm.
       </p>
+      {!nhung && (
+        <p className="mt-4 border-t border-slate-100 pt-4 text-sm text-slate-500">
+          Tài khoản của bạn đã được tạo sẵn với chính email vừa đăng ký — lần sau chỉ cần{" "}
+          <Link href="/dang-nhap" className="font-semibold text-blue-600 hover:underline">đăng nhập</Link>{" "}
+          là xem lại được điểm và quà của mình.
+        </p>
+      )}
       {cd.che_do_demo && t && (
         <div className="mt-5 rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 p-4 text-sm">
           <div className="font-bold text-blue-700">🔧 Chế độ demo đang bật</div>

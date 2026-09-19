@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  ArrowRight, CalendarClock, CheckCircle2, Gift, Mail, Rocket, Share2,
+  ArrowRight, CalendarClock, CheckCircle2, Gift, LogIn, Mail, Rocket, Share2,
   ShieldCheck, Sparkles, Trophy, UserPlus, Users, Wand2,
 } from "lucide-react";
 import { mot, q } from "@/db";
@@ -38,7 +38,10 @@ export default async function TrangChu() {
           <nav className="flex items-center gap-2">
             <a href="#chien-dich" className="hidden rounded-xl px-3.5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 sm:block">Chiến dịch</a>
             <a href="#cach-hoat-dong" className="hidden rounded-xl px-3.5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 sm:block">Cách hoạt động</a>
-            <Link href="/admin" className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700">Quản trị</Link>
+            <Link href="/dang-nhap" className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+              <LogIn className="h-4 w-4" /> Đăng nhập
+            </Link>
+            <Link href="/admin" className="hidden rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 sm:block">Quản trị</Link>
           </nav>
         </div>
       </header>

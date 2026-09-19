@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
-import { Crown, Gift, PartyPopper, Trophy, Users } from "lucide-react";
+import { Crown, Gift, LogIn, PartyPopper, Trophy, UserRound, Users } from "lucide-react";
 import { mot, q } from "@/db";
 import { chuanHoaMa } from "@/core/ma";
 import { mocKeTiep, type Moc } from "@/core/moc";
@@ -8,6 +9,7 @@ import { demBanXacMinh } from "@/services/nguoi-tham-gia";
 import { tongDiem } from "@/services/diem";
 import { bangXepHang } from "@/services/thong-ke";
 import { layBaseUrl } from "@/services/http";
+import { MAT_KHAU_MAC_DINH, thanhVienHienTai } from "@/services/tai-khoan";
 import KhuChiaSe from "@/ui/KhuChiaSe";
 import NhiemVu from "@/ui/NhiemVu";
 import DemNguoc from "@/ui/DemNguoc";
@@ -44,6 +46,8 @@ export default async function TrangCuaToi(props: {
   const mocLonNhat = cacMoc.length ? cacMoc[cacMoc.length - 1].nguong : 10;
   const loiMoi = `Mình đang tham gia "${cd.ten}" — đăng ký qua link của mình để cả hai cùng có quà nhé!`;
   const loiMoiKenh: Record<string, string> = cd.loi_moi || {}; // F5 — lời mời riêng từng kênh
+  const tv = await thanhVienHienTai();
+  const daDangNhap = tv?.email === ng.email;
 
   return (
     <main className="min-h-screen bg-slate-50 pb-16">
@@ -89,6 +93,32 @@ export default async function TrangCuaToi(props: {
           <div className="mt-4">
             <KhuChiaSe ma={ng.ma} linkGoc={linkRieng} loiMoi={loiMoi} loiMoiKenh={loiMoiKenh} kenhBat={cd.kenh_share.split(",")} diemShare={cd.diem_share} />
           </div>
+        </section>
+
+        {/* Tài khoản thành viên — quay lại trang này bất cứ lúc nào */}
+        <section className="the flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <UserRound className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="font-bold text-slate-900">Tài khoản của bạn</h2>
+              {daDangNhap ? (
+                <p className="mt-0.5 text-sm text-slate-500">
+                  Bạn đang đăng nhập bằng <b className="text-slate-700">{ng.email}</b> — xem toàn bộ điểm, quà và chương trình đã tham gia.
+                </p>
+              ) : (
+                <p className="mt-0.5 text-sm text-slate-500">
+                  Đăng nhập bằng email <b className="text-slate-700">{ng.email}</b> để quay lại trang này bất cứ lúc nào.
+                  Mật khẩu mặc định: <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono font-bold text-blue-700">{MAT_KHAU_MAC_DINH}</code>
+                  {" "}(hệ thống sẽ yêu cầu bạn đổi ngay lần đầu).
+                </p>
+              )}
+            </div>
+          </div>
+          <Link href={daDangNhap ? "/tai-khoan" : `/dang-nhap?tiep=/toi/${ng.ma}`} className="nut-phu !py-2 text-sm">
+            {daDangNhap ? <><UserRound className="h-4 w-4" /> Trang tài khoản</> : <><LogIn className="h-4 w-4" /> Đăng nhập</>}
+          </Link>
         </section>
 
         {/* Tiến độ mốc quà */}
