@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogOut, Mail, Rocket, Settings, Sparkles } from "lucide-react";
+import { LogOut, Mail, Rocket, Settings, Sparkles, Users } from "lucide-react";
 import { laAdmin } from "@/services/auth";
 import { actDangXuat } from "./actions";
 
@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <nav className="flex items-center gap-1">
             <Link href="/admin" className="rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">Tổng quan</Link>
             <Link href="/admin/ai" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><Sparkles className="h-4 w-4 text-blue-600" /> Tạo bằng AI</Link>
+            <Link href="/admin/thanh-vien" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><Users className="h-4 w-4" /> Thành viên</Link>
             <Link href="/admin/email" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><Mail className="h-4 w-4" /> Email</Link>
             <Link href="/admin/cai-dat" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><Settings className="h-4 w-4" /> Cài đặt</Link>
           </nav>

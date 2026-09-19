@@ -229,6 +229,23 @@ export async function actXuLyEmail() {
   revalidatePath("/admin/email");
 }
 
+// ————— Quản lý thành viên —————
+/** Đặt lại mật khẩu về mặc định: xoá băm → lần đăng nhập sau buộc đặt mật khẩu mới.
+ *  Cũng làm mọi phiên đang đăng nhập hết hiệu lực (chữ ký phiên gắn với mật khẩu). */
+export async function actDatLaiMatKhauThanhVien(form: FormData) {
+  await canAdmin();
+  await q(`update tai_khoan set mat_khau='', lan_sai=0, khoa_den=null, doi_mk_luc=null where id=$1`,
+    [Number(form.get("id"))]);
+  revalidatePath("/admin/thanh-vien");
+}
+
+/** Gỡ khoá tạm cho tài khoản bị chặn do nhập sai mật khẩu quá nhiều lần. */
+export async function actMoKhoaThanhVien(form: FormData) {
+  await canAdmin();
+  await q(`update tai_khoan set lan_sai=0, khoa_den=null where id=$1`, [Number(form.get("id"))]);
+  revalidatePath("/admin/thanh-vien");
+}
+
 /** Đưa các email đã đánh dấu "giả lập" (xếp lúc chưa cấu hình Resend) về hàng đợi để gửi thật. */
 export async function actGuiLaiGiaLap() {
   await canAdmin();
