@@ -18,5 +18,7 @@ export async function laAdmin(): Promise<boolean> {
 
 export async function dangXuatAdmin() {
   const kho = await cookies();
-  kho.delete("mgm_admin");
+  // Ghi đè rỗng + maxAge 0 thay cho delete() — trình duyệt áp chắc chắn hơn khi
+  // server action chạy qua fetch của React (xem tai-khoan.ts).
+  kho.set("mgm_admin", "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
 }

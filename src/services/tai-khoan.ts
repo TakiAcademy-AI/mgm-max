@@ -59,7 +59,9 @@ export async function thanhVienHienTai(): Promise<ThanhVien | null> {
 
 export async function dangXuatThanhVien() {
   const kho = await cookies();
-  kho.delete(COOKIE);
+  // Ghi đè cookie rỗng + maxAge 0 (thay vì delete) — cùng đường ghi với lúc đăng nhập,
+  // nên trình duyệt áp đúng Set-Cookie cả khi action chạy qua fetch của React.
+  kho.set(COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
 }
 
 // ————— Tạo tài khoản khi đăng ký chiến dịch —————
