@@ -3,8 +3,8 @@ import { sinhMa, sinhToken, chuanHoaMa, maHopLe } from "@/core/ma";
 import { chamDiemRuiRo, emailHangLoat, emailRac, NGUONG_CACH_LY, NGUONG_NGUOI_CUNG_IP } from "@/core/gian-lan";
 import { chuanHoaSdt } from "@/core/sdt";
 import {
-  gioiHanIpNgayCd, gioiHanIpNgayTong, ipBiChan, ipMienTru,
-  soDangKyIpToanHeThong, soNguoiCungIp,
+  gioiHanIpCd, gioiHanIpNgayTong, ipBiChan, ipMienTru,
+  soDangKyIpToanHeThong, soDangKyIpTrongChienDich, soNguoiCungIp,
 } from "./chong-gian-lan";
 import { mocMoKhoa, mocKeTiep, sapChamMoc, type Moc } from "@/core/moc";
 import { ghiDiem } from "./diem";
@@ -75,13 +75,14 @@ export async function dangKy(tham: {
 
   // Rate-limit theo IP + captcha tự bật (trừ IP whitelist)
   if (tham.ip && !(await ipMienTru(tham.ip))) {
-    const dem = await soDangKyIpHomNay(cd.id, tham.ip);
-    if (dem >= (await gioiHanIpNgayCd()))
-      return { ok: false, loi: "Quá nhiều lượt đăng ký từ mạng của bạn hôm nay. Thử lại sau nhé." };
-    // Trần chung mọi chiến dịch — chặn kiểu rải nhiều chiến dịch để lách trần từng cái
+    // Trần VĨNH VIỄN cho mỗi IP trong chiến dịch này (mặc định 1 lượt — chống cày điểm)
+    const demCd = await soDangKyIpTrongChienDich(cd.id, tham.ip);
+    if (demCd >= (await gioiHanIpCd()))
+      return { ok: false, loi: "Mạng của bạn đã có người tham gia chương trình này rồi. Mỗi mạng chỉ đăng ký được một lần." };
+    // Trần theo ngày trên mọi chiến dịch — chặn kiểu rải nhiều chiến dịch để lách trần từng cái
     if ((await soDangKyIpToanHeThong(tham.ip)) >= (await gioiHanIpNgayTong()))
       return { ok: false, loi: "Quá nhiều lượt đăng ký từ mạng của bạn hôm nay. Thử lại sau nhé." };
-    if (dem >= NGUONG_CAPTCHA && !tham.captchaHopLe)
+    if ((await soDangKyIpHomNay(cd.id, tham.ip)) >= NGUONG_CAPTCHA && !tham.captchaHopLe)
       return { ok: false, loi: "Vui lòng trả lời đúng câu hỏi xác nhận bên dưới.", canCaptcha: true };
   }
 

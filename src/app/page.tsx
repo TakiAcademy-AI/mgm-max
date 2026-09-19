@@ -41,7 +41,6 @@ export default async function TrangChu() {
             <Link href="/dang-nhap" className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white hover:bg-slate-800">
               <LogIn className="h-4 w-4" /> Đăng nhập
             </Link>
-            <Link href="/admin" className="hidden rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 sm:block">Quản trị</Link>
           </nav>
         </div>
       </header>
@@ -126,8 +125,7 @@ export default async function TrangChu() {
             <div className="the mt-6 p-12 text-center">
               <Gift className="mx-auto h-10 w-10 text-slate-300" />
               <div className="mt-3 font-bold text-slate-700">Chưa có chiến dịch nào đang chạy</div>
-              <div className="mt-1 text-sm text-slate-500">Quay lại sau nhé — hoặc nếu bạn là chủ chiến dịch, hãy tạo ngay chiến dịch đầu tiên.</div>
-              <Link href="/admin" className="nut-chinh mt-5">Vào trang quản trị <ArrowRight className="h-4 w-4" /></Link>
+              <div className="mt-1 text-sm text-slate-500">Chương trình mới sẽ mở sớm thôi — bạn quay lại sau nhé!</div>
             </div>
           ) : (
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
@@ -165,28 +163,26 @@ export default async function TrangChu() {
           )}
         </section>
 
-        {/* ————— Dành cho chủ chiến dịch ————— */}
+        {/* ————— Vì sao tin được ————— */}
         <section className="mx-auto max-w-6xl px-4 pb-16">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 p-8 sm:p-12">
             <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
             <div className="relative grid items-center gap-8 sm:grid-cols-2">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-sm font-semibold text-blue-200">
-                  <Wand2 className="h-4 w-4" /> Dành cho chủ sản phẩm & khoá học
+                  <ShieldCheck className="h-4 w-4" /> Chơi thật — thưởng thật
                 </div>
-                <h2 className="mt-4 text-3xl font-black leading-tight text-white">Tự tạo chiến dịch viral cho thương hiệu của bạn</h2>
+                <h2 className="mt-4 text-3xl font-black leading-tight text-white">Quà về tay bạn một cách minh bạch</h2>
                 <p className="mt-3 text-slate-300">
-                  Trình kéo-thả thiết kế trang, 15 mẫu chiến dịch dựng sẵn, AI sinh trọn chiến dịch bằng một câu mô tả — chạy trong vài phút.
+                  Mỗi lượt mời chỉ tính khi bạn của bạn xác nhận email thật. Mốc quà rõ ràng từ đầu,
+                  đủ số bạn là quà tự mở khoá — không xét duyệt cảm tính, không ai chen ngang.
                 </p>
-                <Link href="/admin" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3.5 font-bold text-slate-900 shadow-lg transition-transform hover:scale-[1.03]">
-                  Tạo chiến dịch ngay <ArrowRight className="h-4.5 w-4.5" />
-                </Link>
               </div>
               <ul className="space-y-3">
                 {[
-                  "Mốc quà tự động trao — thưởng hai chiều cho cả người được mời",
-                  "Chống gian lận 4 lớp: xác minh email, chấm điểm rủi ro, cách ly",
-                  "Email tự động, bốc thăm minh bạch, đo K-factor từng kênh",
+                  "Mốc quà tự động trao — người được mời cũng có quà chào mừng",
+                  "Chống gian lận nhiều lớp để người chơi thật không bị thiệt",
+                  "Bảng xếp hạng và bốc thăm minh bạch, tái lập được kết quả",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-3 rounded-2xl bg-white/5 p-4 text-sm font-medium text-slate-200">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" /> {t}
@@ -205,7 +201,7 @@ export default async function TrangChu() {
             <Rocket className="h-4 w-4 text-blue-500" />
             <span className="font-bold text-slate-600">MGM MAX</span> — nền tảng mời bạn nhận quà
           </div>
-          <Link href="/admin" className="font-semibold text-blue-600 hover:underline">Trang quản trị →</Link>
+          <Link href="/dang-nhap" className="font-semibold text-blue-600 hover:underline">Đăng nhập thành viên →</Link>
         </div>
       </footer>
     </div>

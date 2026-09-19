@@ -2,7 +2,7 @@
 import { mot } from "@/db";
 import { layCaiDat } from "./cai-dat";
 
-export const MAC_DINH_IP_NGAY_CD = 3;    // lượt/IP/ngày trong CÙNG 1 chiến dịch
+export const MAC_DINH_IP_CD = 1;         // lượt/IP trong 1 chiến dịch — tính VĨNH VIỄN, không reset theo ngày
 export const MAC_DINH_IP_NGAY_TONG = 8;  // lượt/IP/ngày trên TOÀN hệ thống
 
 const so = async (khoa: string, macDinh: number) => {
@@ -10,8 +10,16 @@ const so = async (khoa: string, macDinh: number) => {
   return Number.isFinite(v) && v > 0 ? v : macDinh;
 };
 
-export const gioiHanIpNgayCd = () => so("gioi_han_ip_ngay", MAC_DINH_IP_NGAY_CD);
+export const gioiHanIpCd = () => so("gioi_han_ip_cd", MAC_DINH_IP_CD);
 export const gioiHanIpNgayTong = () => so("gioi_han_ip_ngay_tong", MAC_DINH_IP_NGAY_TONG);
+
+/** Tổng lượt đăng ký từ 1 IP trong 1 chiến dịch — MỌI thời điểm (không giới hạn theo ngày). */
+export async function soDangKyIpTrongChienDich(chienDichId: number, ip: string): Promise<number> {
+  if (!ip) return 0;
+  const r = await mot<{ so: string }>(
+    `select count(*) as so from nguoi_tham_gia where chien_dich_id=$1 and ip=$2`, [chienDichId, ip]);
+  return Number(r?.so || 0);
+}
 
 /** Lượt đăng ký từ 1 IP hôm nay trên TOÀN hệ thống (mọi chiến dịch). */
 export async function soDangKyIpToanHeThong(ip: string): Promise<number> {

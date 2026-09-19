@@ -2,9 +2,8 @@ import { Mail, Save, Send, ShieldCheck, Sparkles, Webhook } from "lucide-react";
 import { layCaiDat } from "@/services/cai-dat";
 import { layCheDoAI } from "@/services/ai";
 import {
-  gioiHanIpNgayCd, gioiHanIpNgayTong, MAC_DINH_IP_NGAY_CD, MAC_DINH_IP_NGAY_TONG,
+  gioiHanIpCd, gioiHanIpNgayTong, MAC_DINH_IP_CD, MAC_DINH_IP_NGAY_TONG,
 } from "@/services/chong-gian-lan";
-import { NGUONG_CAPTCHA } from "@/services/captcha";
 import { yeuCauAdmin } from "../bao-ve";
 import { actLuuCaiDat, actGuiEmailTest, actGuiWebhookTest } from "../actions";
 
@@ -13,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function TrangCaiDat(props: { searchParams: Promise<{ test?: string }> }) {
   await yeuCauAdmin();
   const { test = "" } = await props.searchParams;
-  const gioiHanIpCd = await gioiHanIpNgayCd();
+  const gioiHanIpTrongCd = await gioiHanIpCd();
   const gioiHanIpTong = await gioiHanIpNgayTong();
   const whitelistIp = await layCaiDat("whitelist_ip");
   const blacklistEmail = await layCaiDat("blacklist_email");
@@ -111,9 +110,13 @@ export default async function TrangCaiDat(props: { searchParams: Promise<{ test?
         {/* Giới hạn theo IP — chống cày điểm ảo */}
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="nhan">Giới hạn đăng ký / IP / ngày — trong 1 chiến dịch</label>
-            <input name="gioi_han_ip_ngay" type="number" min={1} defaultValue={gioiHanIpCd} className="o-nhap" />
-            <p className="mt-1 text-xs text-slate-400">Mặc định {MAC_DINH_IP_NGAY_CD}. Vượt {NGUONG_CAPTCHA} lượt là tự bật captcha.</p>
+            <label className="nhan">Giới hạn đăng ký / IP trong 1 chiến dịch (vĩnh viễn)</label>
+            <input name="gioi_han_ip_cd" type="number" min={1} defaultValue={gioiHanIpTrongCd} className="o-nhap" />
+            <p className="mt-1 text-xs text-slate-400">
+              Mặc định {MAC_DINH_IP_CD} — mỗi mạng chỉ đăng ký được 1 lần, không reset theo ngày.
+              <b className="text-amber-700"> Lưu ý:</b> nhà mạng di động VN dùng chung IP cho rất nhiều thuê bao,
+              để mức 1 có thể chặn nhầm người thật — nới lên 3–5 nếu thấy khách báo không đăng ký được.
+            </p>
           </div>
           <div>
             <label className="nhan">Giới hạn đăng ký / IP / ngày — toàn hệ thống</label>
