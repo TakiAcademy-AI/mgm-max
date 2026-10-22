@@ -3,7 +3,10 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { mot, pool, q } from "@/db";
-import { dangNhapAdmin, dangXuatAdmin, laAdmin } from "@/services/auth";
+import {
+  adminHienTai, batLaiQuanTri, dangNhapAdmin, dangXuatAdmin, datLaiMatKhauQuanTri,
+  doiMatKhauQuanTri, laAdmin, moKhoaQuanTri, tatQuanTri, themQuanTri,
+} from "@/services/auth";
 import { ghiCaiDat } from "@/services/cai-dat";
 import { ghiDiem } from "@/services/diem";
 import { render, xuLyHangDoi, guiEmailTest } from "@/services/email";
@@ -19,8 +22,57 @@ async function canAdmin() {
 }
 
 export async function actDangNhap(form: FormData) {
-  const ok = await dangNhapAdmin(String(form.get("mat_khau") || ""));
-  redirect(ok ? "/admin" : "/admin/dang-nhap?loi=1");
+  const kq = await dangNhapAdmin(String(form.get("email") || ""), String(form.get("mat_khau") || ""));
+  if (!kq.ok) redirect(`/admin/dang-nhap?loi=${encodeURIComponent(kq.loi)}`);
+  redirect("/admin");
+}
+
+// ————— Tài khoản quản trị —————
+const VE_QT = "/admin/quan-tri";
+
+export async function actThemQuanTri(form: FormData) {
+  await canAdmin();
+  const kq = await themQuanTri(
+    String(form.get("email") || ""), String(form.get("ten") || ""), String(form.get("mat_khau") || ""));
+  if (!kq.ok) redirect(`${VE_QT}?loi=${encodeURIComponent(kq.loi)}`);
+  redirect(`${VE_QT}?ok=${encodeURIComponent("Đã thêm quản trị viên mới.")}`);
+}
+
+export async function actTatQuanTri(form: FormData) {
+  await canAdmin();
+  const toi = await adminHienTai();
+  const kq = await tatQuanTri(Number(form.get("id")), toi?.id || 0);
+  if (!kq.ok) redirect(`${VE_QT}?loi=${encodeURIComponent(kq.loi)}`);
+  redirect(`${VE_QT}?ok=${encodeURIComponent("Đã tắt quyền quản trị.")}`);
+}
+
+export async function actBatLaiQuanTri(form: FormData) {
+  await canAdmin();
+  await batLaiQuanTri(Number(form.get("id")));
+  redirect(`${VE_QT}?ok=${encodeURIComponent("Đã bật lại quyền quản trị.")}`);
+}
+
+export async function actMoKhoaQuanTri(form: FormData) {
+  await canAdmin();
+  await moKhoaQuanTri(Number(form.get("id")));
+  redirect(`${VE_QT}?ok=${encodeURIComponent("Đã mở khoá đăng nhập.")}`);
+}
+
+/** Đặt lại mật khẩu cho admin khác — mật khẩu mới hiện MỘT LẦN trên URL để chép đưa họ. */
+export async function actDatLaiMatKhauQuanTri(form: FormData) {
+  await canAdmin();
+  const mk = await datLaiMatKhauQuanTri(Number(form.get("id")));
+  redirect(`${VE_QT}?mk=${encodeURIComponent(mk)}&cho=${Number(form.get("id"))}`);
+}
+
+export async function actDoiMatKhauQuanTri(form: FormData) {
+  const toi = await adminHienTai();
+  if (!toi) redirect("/admin/dang-nhap");
+  const kq = await doiMatKhauQuanTri(
+    toi, String(form.get("mat_khau_cu") || ""),
+    String(form.get("mat_khau_moi") || ""), String(form.get("mat_khau_lai") || ""));
+  if (!kq.ok) redirect(`${VE_QT}?loi=${encodeURIComponent(kq.loi)}`);
+  redirect(`${VE_QT}?ok=${encodeURIComponent("Đã đổi mật khẩu. Các thiết bị khác phải đăng nhập lại.")}`);
 }
 
 export async function actDangXuat() {

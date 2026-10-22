@@ -85,7 +85,7 @@ pnpm dev                  # http://localhost:3005
 ```
 
 - Trang công khai: `http://localhost:3005/c/khoa-hoc-ai`
-- Quản trị: `http://localhost:3005/admin` — mật khẩu mặc định `mgmmax123` (đổi bằng `ADMIN_MAT_KHAU`)
+- Quản trị: `http://localhost:3005/admin` — đăng nhập bằng **email + mật khẩu**. `pnpm db:init` tự tạo quản trị viên đầu tiên `ai@taki.vn` với mật khẩu lấy từ `ADMIN_MAT_KHAU` (đổi email bằng `ADMIN_EMAIL`). Thêm/tắt quản trị viên trong **Admin → Quản trị viên**.
 - Thiết kế trang: **Admin → chiến dịch → Thiết lập → Trang đăng ký → Mở trình kéo-thả**
 - Test core: `pnpm test`
 
@@ -101,7 +101,8 @@ pnpm build && pnpm start &
 | Biến | Ý nghĩa |
 | --- | --- |
 | `DATABASE_URL` | Chuỗi kết nối Postgres |
-| `ADMIN_MAT_KHAU` | Mật khẩu admin (mặc định `mgmmax123`) |
+| `ADMIN_MAT_KHAU` | Mật khẩu của quản trị viên đầu tiên + khoá ký token nội bộ (mặc định `mgmmax123`) |
+| `ADMIN_EMAIL` | Email quản trị viên đầu tiên (mặc định `ai@taki.vn`) |
 | `RESEND_API_KEY` + `EMAIL_FROM` | Gửi email thật (bỏ trống = giả lập, xem trong Admin → Email) |
 | `MGM_AI_MODE` · `ANTHROPIC_API_KEY` · `CLAUDE_MODEL` | Referral AI (`cli` gói sub hoặc `api`) |
 | **`CRON_SECRET`** | **Bắt buộc khi deploy thật** — bảo vệ `/api/cron` |

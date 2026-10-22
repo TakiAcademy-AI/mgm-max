@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { LogOut, Mail, Rocket, Settings, Sparkles, Users } from "lucide-react";
-import { laAdmin } from "@/services/auth";
+import { LogOut, Mail, Rocket, Settings, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { adminHienTai } from "@/services/auth";
 import { actDangXuat } from "./actions";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const daDangNhap = await laAdmin();
-  if (!daDangNhap) return <>{children}</>; // trang đăng nhập tự render
+  const toi = await adminHienTai();
+  if (!toi) return <>{children}</>; // trang đăng nhập tự render
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -22,8 +22,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/thanh-vien" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><Users className="h-4 w-4" /> Thành viên</Link>
             <Link href="/admin/email" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><Mail className="h-4 w-4" /> Email</Link>
             <Link href="/admin/cai-dat" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><Settings className="h-4 w-4" /> Cài đặt</Link>
+            <Link href="/admin/quan-tri" className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><ShieldCheck className="h-4 w-4" /> Quản trị viên</Link>
           </nav>
-          <form action={actDangXuat} className="ml-auto">
+          <Link href="/admin/quan-tri" className="ml-auto hidden max-w-[16rem] truncate px-3 text-sm text-slate-500 hover:text-blue-700 sm:block" title={toi.email}>
+            {toi.ten || toi.email}
+          </Link>
+          <form action={actDangXuat} className="sm:ml-0 ml-auto">
             <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer">
               <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">Đăng xuất</span>
             </button>

@@ -6,6 +6,7 @@ import { mocKeTiep, mocMoKhoa, sapChamMoc, type Moc } from "./moc";
 import { anDanh, soSanhHang, type DongHang } from "./xep-hang";
 import { heSoK, phanTram } from "./thong-ke";
 import { cheSdt, chuanHoaSdt, sdtHopLe } from "./sdt";
+import { bamMatKhau, khopChuoiBiMat, khopMatKhau } from "./mat-khau";
 
 describe("mã giới thiệu", () => {
   it("sinh mã 8 ký tự trong bảng Crockford, không trùng trong 1000 lần", () => {
@@ -147,5 +148,26 @@ describe("số điện thoại", () => {
   });
   it("che số khi hiển thị công khai", () => {
     expect(cheSdt("+84912345678")).toBe("0912***678");
+  });
+});
+
+describe("băm mật khẩu", () => {
+  it("khớp đúng mật khẩu, loại mật khẩu sai", () => {
+    const luu = bamMatKhau("matkhau-manh-123");
+    expect(khopMatKhau("matkhau-manh-123", luu)).toBe(true);
+    expect(khopMatKhau("matkhau-manh-124", luu)).toBe(false);
+    expect(khopMatKhau("", luu)).toBe(false);
+  });
+  it("hai lần băm cùng mật khẩu ra chuỗi khác nhau (muối ngẫu nhiên)", () => {
+    expect(bamMatKhau("abc")).not.toBe(bamMatKhau("abc"));
+  });
+  it("chuỗi lưu hỏng thì không khớp, không ném lỗi", () => {
+    for (const v of ["", "khongcodaucham", "a:", ":b", "a:zz"])
+      expect(khopMatKhau("abc", v)).toBe(false);
+  });
+  it("so chuỗi bí mật", () => {
+    expect(khopChuoiBiMat("abc123", "abc123")).toBe(true);
+    expect(khopChuoiBiMat("abc123", "abc124")).toBe(false);
+    expect(khopChuoiBiMat("abc", "abcd")).toBe(false);
   });
 });

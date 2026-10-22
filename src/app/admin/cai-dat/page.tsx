@@ -167,7 +167,7 @@ export default async function TrangCaiDat(props: { searchParams: Promise<{ test?
           <li>• Referral AI: {che === "cli" ? <b className="text-emerald-600">Claude CLI (gói subscription)</b> : <b className="text-blue-700">Claude API (ANTHROPIC_API_KEY)</b>} — CLI: chạy <code className="font-mono">claude</code> + <code className="font-mono">/login</code> trên máy chủ; hoặc ép chế độ bằng <code className="font-mono">MGM_AI_MODE=cli|api</code></li>
           <li>• Cron nội bộ chạy 5 phút/lần: tự đóng campaign hết hạn + tự bốc thăm (chờ duyệt), nhắc người im ắng 3 ngày, xử lý email — gọi tay: <code className="font-mono">GET /api/cron</code> (cần <code className="font-mono">CRON_SECRET</code>)</li>
           <li>• Chống gian lận đang bật: chặn email rác dùng-một-lần, giới hạn 3 đăng ký/IP/ngày, captcha tự bật từ lượt thứ 3 cùng IP, chặn tự giới thiệu, double opt-in bắt buộc, chấm điểm rủi ro ≥50 → cách ly</li>
-          <li>• Mật khẩu admin: biến <code className="font-mono">ADMIN_MAT_KHAU</code> (mặc định <code className="font-mono">mgmmax123</code>)</li>
+          <li>• Tài khoản quản trị: mỗi người một email + mật khẩu riêng — quản lý ở mục <b>Quản trị viên</b></li>
           <li>• Múi giờ tính "ngày" cho điểm share/click: <b>Asia/Ho_Chi_Minh</b></li>
         </ul>
       </div>
