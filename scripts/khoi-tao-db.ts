@@ -9,6 +9,10 @@ const pool = new Pool({ connectionString: url });
 
 const EMAIL_ADMIN = (process.env.ADMIN_EMAIL || "ai@taki.vn").trim().toLowerCase();
 const MAT_KHAU_ADMIN = process.env.ADMIN_MAT_KHAU || "mgmmax123";
+// Cứu khi quản trị viên quên/mất mật khẩu: đặt ADMIN_RESET_EMAIL=<email> rồi deploy lại.
+// Chỉ chạy MỘT LẦN cho mỗi giá trị (ghi dấu vào cai_dat) nên để quên biến cũng không
+// bị ghi đè mật khẩu ở những lần deploy sau.
+const EMAIL_RESET = (process.env.ADMIN_RESET_EMAIL || "").trim().toLowerCase();
 
 async function main() {
   const sql = readFileSync(new URL("../db/schema.sql", import.meta.url), "utf8");
@@ -27,6 +31,27 @@ async function main() {
   } else {
     console.log("✓ Đã có quản trị viên, bỏ qua bước tạo");
   }
+
+  if (EMAIL_RESET) {
+    const dau = `reset:${EMAIL_RESET}`;
+    const { rows: d } = await pool.query(`select gia_tri from cai_dat where khoa='admin_reset_dau'`);
+    if (d[0]?.gia_tri === dau) {
+      console.log(`✓ Đã đặt lại mật khẩu cho ${EMAIL_RESET} ở lần trước, bỏ qua`);
+    } else {
+      const { rowCount } = await pool.query(
+        `update quan_tri set mat_khau=$2, bat=true, lan_sai=0, khoa_den=null, doi_mk_luc=now()
+         where email=$1`, [EMAIL_RESET, bamMatKhau(MAT_KHAU_ADMIN)]);
+      if (rowCount) {
+        await pool.query(
+          `insert into cai_dat (khoa, gia_tri) values ('admin_reset_dau',$1)
+           on conflict (khoa) do update set gia_tri=excluded.gia_tri`, [dau]);
+        console.log(`✓ ĐÃ ĐẶT LẠI mật khẩu cho ${EMAIL_RESET} = ADMIN_MAT_KHAU`);
+      } else {
+        console.log(`! Không tìm thấy quản trị viên ${EMAIL_RESET} để đặt lại`);
+      }
+    }
+  }
+
   await pool.end();
 }
 main().catch((e) => { console.error(e); process.exit(1); });

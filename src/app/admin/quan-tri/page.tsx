@@ -104,13 +104,18 @@ export default async function TrangQuanTri(props: {
                       )}
                       {a.bat ? (
                         <>
-                          <form action={actDatLaiMatKhauQuanTri}>
-                            <input type="hidden" name="id" value={a.id} />
-                            <NutXacNhan
-                              hoi={`Đặt lại mật khẩu cho ${a.email}?\n\nHọ sẽ bị đăng xuất khỏi mọi thiết bị và phải dùng mật khẩu mới.`}
-                              nhan="Đặt lại mật khẩu"
-                              icon={<KeyRound className="h-3.5 w-3.5" />} />
-                          </form>
+                          {/* Không cho tự đặt lại mật khẩu của chính mình: mật khẩu sinh ra chỉ
+                              hiện một lần, lỡ rời trang là tự khoá mình ra ngoài. Dùng ô
+                              «Đổi mật khẩu của bạn» bên dưới — có nhập mật khẩu mới chủ động. */}
+                          {!laToi && (
+                            <form action={actDatLaiMatKhauQuanTri}>
+                              <input type="hidden" name="id" value={a.id} />
+                              <NutXacNhan
+                                hoi={`Đặt lại mật khẩu cho ${a.email}?\n\nHọ sẽ bị đăng xuất khỏi mọi thiết bị và phải dùng mật khẩu mới.`}
+                                nhan="Đặt lại mật khẩu"
+                                icon={<KeyRound className="h-3.5 w-3.5" />} />
+                            </form>
+                          )}
                           {!laToi && (
                             <form action={actTatQuanTri}>
                               <input type="hidden" name="id" value={a.id} />
