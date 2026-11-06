@@ -16,6 +16,7 @@ import { chayBocTham, chiDinhWinner, duyetBocTham } from "@/services/boc-tham-sv
 import { taoChienDichBangAI } from "@/services/ai";
 import { timMauToanDien } from "@/ui/mau-toan-dien";
 import { layBaseUrl } from "@/services/http";
+import { chuanHoaSlug } from "@/core/slug";
 
 async function canAdmin() {
   if (!(await laAdmin())) redirect("/admin/dang-nhap");
@@ -466,6 +467,24 @@ export async function actDoiTenChienDich(form: FormData) {
   const ten = String(form.get("ten") || "").trim();
   if (ten) await q(`update chien_dich set ten=$2 where id=$1`, [id, ten.slice(0, 120)]);
   revalidatePath(`/admin/cd/${id}`, "layout");
+}
+
+/** Đổi đường dẫn công khai /c/[slug]. Slug là UNIQUE nên phải báo rõ khi trùng. */
+export async function actDoiSlug(form: FormData) {
+  await canAdmin();
+  const id = Number(form.get("id"));
+  const ve = `/admin/cd/${id}/thiet-lap/nang-cao/chung`;
+  const slug = chuanHoaSlug(String(form.get("slug") || ""));
+  if (slug.length < 3)
+    redirect(`${ve}?loi=${encodeURIComponent("Đường dẫn cần ít nhất 3 ký tự chữ hoặc số.")}`);
+
+  const trung = await mot(`select id from chien_dich where slug=$1 and id<>$2`, [slug, id]);
+  if (trung)
+    redirect(`${ve}?loi=${encodeURIComponent(`Đường dẫn «${slug}» đã được một chiến dịch khác dùng.`)}`);
+
+  await q(`update chien_dich set slug=$2 where id=$1`, [id, slug]);
+  revalidatePath(`/admin/cd/${id}`, "layout");
+  redirect(`${ve}?ok=${encodeURIComponent(`Đã đổi đường dẫn thành /c/${slug}`)}`);
 }
 
 export async function actTaoTuMau(form: FormData) {

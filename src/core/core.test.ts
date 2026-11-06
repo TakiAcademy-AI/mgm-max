@@ -7,6 +7,7 @@ import { anDanh, soSanhHang, type DongHang } from "./xep-hang";
 import { heSoK, phanTram } from "./thong-ke";
 import { cheSdt, chuanHoaSdt, sdtHopLe } from "./sdt";
 import { bamMatKhau, khopChuoiBiMat, khopMatKhau } from "./mat-khau";
+import { chuanHoaSlug, slugHopLe } from "./slug";
 
 describe("mã giới thiệu", () => {
   it("sinh mã 8 ký tự trong bảng Crockford, không trùng trong 1000 lần", () => {
@@ -169,5 +170,25 @@ describe("băm mật khẩu", () => {
     expect(khopChuoiBiMat("abc123", "abc123")).toBe(true);
     expect(khopChuoiBiMat("abc123", "abc124")).toBe(false);
     expect(khopChuoiBiMat("abc", "abcd")).toBe(false);
+  });
+});
+
+describe("slug đường dẫn", () => {
+  it("bỏ dấu tiếng Việt", () => {
+    expect(chuanHoaSlug("Khoá học AI thực chiến")).toBe("khoa-hoc-ai-thuc-chien");
+    expect(chuanHoaSlug("Đặt hàng sớm")).toBe("dat-hang-som");
+  });
+  it("gộp ký tự lạ thành một gạch, không để gạch thừa hai đầu", () => {
+    expect(chuanHoaSlug("  --Mua 1 tặng 1!!! --  ")).toBe("mua-1-tang-1");
+    expect(chuanHoaSlug("a///b___c")).toBe("a-b-c");
+  });
+  it("slug đã chuẩn thì giữ nguyên", () => {
+    expect(chuanHoaSlug("khoa-hoc-ai")).toBe("khoa-hoc-ai");
+    expect(slugHopLe("khoa-hoc-ai")).toBe(true);
+  });
+  it("loại slug quá ngắn hoặc chưa chuẩn", () => {
+    expect(slugHopLe("ab")).toBe(false);
+    expect(slugHopLe("Khoa Hoc")).toBe(false);
+    expect(slugHopLe("")).toBe(false);
   });
 });
